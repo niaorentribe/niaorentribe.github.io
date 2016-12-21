@@ -66,11 +66,13 @@
 <p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/1/1-3.png?raw=true" alt="Android启动过程"></p>
 <p>以下对照图简单地讲解一下。</p>
 <ol>
-<li><p>Linux 内核<br>Android 是基于 Linux 内核的系统平台。启动时，首先通过 bootloader （系统加载器）加载 Linux 内核。在 Linux 加载启动时，与普通的 Linux 启动过程相同，先初始化内核，然后调用 init 进程。</p>
-</li>
-<li><p>Init<br>Android init 是内核启动后创建的第一个用户空间进程，负责对各种设备进行初始化，运行 Android Framework 所需用的各种 Daemon、Context Manager、Media Server、Zygote等。</p>
-</li>
+<li>Linux 内核  </li>
 </ol>
+<p>Android 是基于 Linux 内核的系统平台。启动时，首先通过 bootloader （系统加载器）加载 Linux 内核。在 Linux 加载启动时，与普通的 Linux 启动过程相同，先初始化内核，然后调用 init 进程。</p>
+<ol>
+<li>Init  </li>
+</ol>
+<p>Android init 是内核启动后创建的第一个用户空间进程，负责对各种设备进行初始化，运行 Android Framework 所需用的各种 Daemon、Context Manager、Media Server、Zygote等。</p>
 <p>以下是 init 进程启动的 Daemon 进程：</p>
 <ul>
 <li>UEvent Daemon (ueventd)：监听内核发出的uevent创建相应的设备节点文件</li>
@@ -81,22 +83,28 @@
 <li>Health Daemon (healthd)：系统健康管理，监听系统电量信息</li>
 </ul>
 <ol>
-<li>Context Manager<br>Context Manager 是一个管理 Android 系统服务的重要进程。系统服务是组成 Android Framework 的重要组成部分，提供从相机、音频、视频处理到各种应用程序制作所需的重要 API。</li>
+<li>Context Manager  </li>
 </ol>
+<p>Context Manager 是一个管理 Android 系统服务的重要进程。系统服务是组成 Android Framework 的重要组成部分，提供从相机、音频、视频处理到各种应用程序制作所需的重要 API。</p>
 <p>在系统启动时，Android 所有运行的服务都要把各自的信息注册到 Context Manager。应用程序或 Android Framework 内部模块在调用系统服务时，都需要先向 Context Manager 查询服务，然后再通过 Binder IPC（interprocess communication，应用间通信）调用相应的服务。</p>
 <ol>
-<li><p>Media Server<br>Media Server 用于运行基于 C/C++ 的本地系统服务，如 Media Player Service、Resource Manager Service等。</p>
-</li>
-<li><p>Zygote<br>Zygote 进程用于缩短 Android 应用程序的加载时间。每当有 Android 程序需要执行时，Zygote 接收到请求后就会派生出一个子进程来执行应用程序。由于 Zygote 预先加载了应用程序所需的系统资源，派生出的子进程也共享这些资源，因而节省了系统资源重复加载的时间。</p>
-</li>
-<li><p>System Server<br>System Server 是由 Zygote 进程创建一个 Android 系统的核心进程。在 System Server 中可以看到它启动了 Android 系统中的大部分服务，如 VR Manager Service（管理系统VR模式切换）、Display Manager Service（支持多种显示类型的多个显示器的镜像显示）等。</p>
-</li>
+<li>Media Server  </li>
 </ol>
+<p>Media Server 用于运行基于 C/C++ 的本地系统服务，如 Media Player Service、Resource Manager Service等。</p>
+<ol>
+<li>Zygote  </li>
+</ol>
+<p>Zygote 进程用于缩短 Android 应用程序的加载时间。每当有 Android 程序需要执行时，Zygote 接收到请求后就会派生出一个子进程来执行应用程序。由于 Zygote 预先加载了应用程序所需的系统资源，派生出的子进程也共享这些资源，因而节省了系统资源重复加载的时间。</p>
+<ol>
+<li>System Server  </li>
+</ol>
+<p>System Server 是由 Zygote 进程创建一个 Android 系统的核心进程。在 System Server 中可以看到它启动了 Android 系统中的大部分服务，如 VR Manager Service（管理系统VR模式切换）、Display Manager Service（支持多种显示类型的多个显示器的镜像显示）等。</p>
 <p>为了将运行在 System Server 中的 Java 系统服务提供给 Android 应用程序或 Framework 内部模块调用，需要将这些服务先注册到 Context Manager中。</p>
 <p>在通过 Binder IPC 将 Java 系统服务注册到基于 C/C++ 的服务管理器时，需要使用 JNI（Java Native Interface）编程接口。</p>
 <ol>
-<li>Server<br>Init 进程启动后将创建出以下本地服务：</li>
+<li>Server  </li>
 </ol>
+<p>Init 进程启动后将创建出以下本地服务：</p>
 <ul>
 <li>Audio Server (audioserver)：管理音频输入输出</li>
 <li>Camera Server (cameraserver)：管理相机功能</li>
