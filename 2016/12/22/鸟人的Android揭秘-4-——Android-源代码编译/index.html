@@ -1,0 +1,205 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>鸟人的Android揭秘(4)——Android 源代码编译 | 鸟人私房菜</title>
+  <meta name="author" content="鸟人部落">
+  
+  <meta name="description" content="前文主要讲解了 Android 编译环境的搭建，接下来我们正式开始 Android 源代码的编译，主要涉及两部分内容：源代码的下载和源代码编译。
+一、Android源代码下载
+配置 Git 信息将自己的姓名和邮箱信息配置到 Git 中，如果要使用 Gerrit 代码审查工具，邮箱必须是 Google">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="鸟人的Android揭秘(4)——Android 源代码编译"/>
+  <meta property="og:site_name" content="鸟人私房菜"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="鸟人私房菜" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">鸟人私房菜</a></h1>
+  <h2><a href="/"></a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2016-12-22T05:42:40.000Z"><a href="/2016/12/22/鸟人的Android揭秘-4-——Android-源代码编译/">2016-12-22</a></time>
+      
+      
+  
+    <h1 class="title">鸟人的Android揭秘(4)——Android 源代码编译</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>前文主要讲解了 Android 编译环境的搭建，接下来我们正式开始 Android 源代码的编译，主要涉及两部分内容：源代码的下载和源代码编译。</p>
+<h3 id="一、Android源代码下载"><a href="#一、Android源代码下载" class="headerlink" title="一、Android源代码下载"></a>一、Android源代码下载</h3><ol>
+<li><p>配置 Git 信息<br>将自己的姓名和邮箱信息配置到 Git 中，如果要使用 Gerrit 代码审查工具，邮箱必须是 Google 账号。[1]</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ git config --global user.name <span class="string">"你的姓名"</span></div><div class="line">$ git config --global user.email <span class="string">"你的邮箱"</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>安装 Repo<br>Android 源代码非常庞大，通过 Git 版本管理工具分成了 art、bionic、dalvik、frameworks 等多个代码仓库，如果分别使用 Git 逐个获取代码显示很麻烦，而 Repo 就是一个用来统一管理这些代码仓库的 Python 脚本工具，通过它可以很方便地同步 Android 源代码。</p>
+<p> 使用 curl 工具下载 Repo 脚本文件并更改运行权限</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ mkdir ~/bin</div><div class="line">$ PATH=~/bin:<span class="variable">$PATH</span>[2]</div><div class="line">$ curl https://storage.googleapis.com/git-repo-downloads/repo &gt; ~/bin/repo</div><div class="line">$ chmod a+x ~/bin/repo</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建源代码存放目录<br>创建 Android 源代码存放目录，如果是在 Mac 操作系统上，该目录需要大小写敏感的文件系统中创建，请参考前文讲解的创建大小写敏感的磁盘映像一节内容。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ mkdir mydroid</div><div class="line">$ <span class="built_in">cd</span> mydroid</div></pre></td></tr></table></figure>
+</li>
+<li><p>初始化 Repo 工作目录<br>执行以下命令下载最新 Android 源代码的 manifest 信息，默认下载的是 master 分支，如果要下载其它分支的信息，需要指定 -b 参数，以下命令所示是下载最新的 android-7.1.1_r6分支[3]。初始化完成后即在当前目录自动创建 .repo 目录，里面已经包含所有必需的信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ repo init -u https://android.googlesource.com/platform/manifest -b android-7.1.1_r6</div></pre></td></tr></table></figure>
+</li>
+<li><p>最后执行以下命令即可开始下载 Android 的源代码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ repo sync</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>Android 的整个源代码超过 50G，下载过程非常漫长。另外，由于国人都知道的原因，以上过程必须配置代理服务器。</p>
+<h3 id="二、Android源代码编译"><a href="#二、Android源代码编译" class="headerlink" title="二、Android源代码编译"></a>二、Android源代码编译</h3><p>Android 源代码下载完成后，即可开始编译。如果需要移植，则需要进行很多设置和修改。但如果只是搭建一个模拟环境，编译时，只需保持默认设置即可。进入 Android 源代码所在的目录，按照以下的步骤即可开始编译。</p>
+<ol>
+<li><p>初始化编译环境</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ <span class="built_in">source</span> build/envsetup.sh</div></pre></td></tr></table></figure>
+<p> 或者将 source 用 . 代替也可以</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ . build/envsetup.sh</div></pre></td></tr></table></figure>
+</li>
+<li><p>选择目标配置<br>编译配置的类型说明如下：<br> 类型 | 目的<br> —|—<br> user | 生产版本，具有有限的访问权限<br> userdebug | 调试版本，和生产版本类似，但具有 root 权限和可调试性<br> eng | 开发版本，带有额外的调试工具<br> 市面大多数手机都采用 arm 架构，如果希望编译后的 img 文件可以刷到手机上，需要使用带 arm 标识的配置，如下</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ lunch aosp_arm-eng</div></pre></td></tr></table></figure>
+<p> 笔者后续将讲解如何用模拟器加载编译生成的 img 文件，并使用 HAX（Intel Hardware Accelerated Execution）[4]加速模拟器运行，所以此处使用 x86的配置</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">lunch aosp_x86_64-eng</div></pre></td></tr></table></figure>
+</li>
+<li><p>开始编译<br>直接执行 make 命令即可开始编译，make 命令后面的 -jN 表示启用多少个并行任务同时进行编译</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ make -j4</div></pre></td></tr></table></figure>
+<p> 在笔者的编译环境下，编译结果如下图所示。</p>
+<p> <img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-5.png?raw=true" alt="成功编译Android源代码显示的信息"></p>
+<p> 第一次完整编译会非常耗时，笔者使用的是 Mac 系统、i7的CPU、8G的内存、固态硬盘，但仍然用了3个多小时。后续如果对源代码做一些修改，因为使用了前面的一些编译结果，再次编译的时间就不会这么长。如果要确保修改的结果会被编译进去，可以使用以下命令将前面的编译结果全部清除，但再次编译又需要经历漫长的等待。</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ make clobber</div></pre></td></tr></table></figure>
+<p> Android 源代码编译的产物中最重要的是三个镜像文件，它们都位于 /out/target/product/<product_name>/ 目录下，分别是：</product_name></p>
+<ul>
+<li>system.img：包含了 Android OS 的系统文件、库、可执行文件以及预置的应用程序，将被挂载为根分区。</li>
+<li>ramdisk.img：在启动时将被 Linux 内核挂载为只读分区，它包含了 /init 文件和一些配置文件。它用来挂载其他系统镜像并启动 init 进程。</li>
+<li>userdata.img：将被挂载为 /data，包含了应用程序相关的数据以及和用户相关的数据。</li>
+</ul>
+</li>
+</ol>
+<p>[1] Git 的配置信息可在 ~/.gitconfig 文件中看到。</p>
+<p>[2] 此处设置只对当前的终端窗口有效，如想长期有效，在 Mac 系统上需在 ~/.bash_profile 中设置，而 Ubuntu 系统则需在 ~/.bashrc 中设置。</p>
+<p>[3] Android 源代码的标签和分支信息可在以下网址查看：<a href="http://source.android.com/source/build-numbers.html#source-code-tags-and-builds" target="_blank" rel="external">http://source.android.com/source/build-numbers.html#source-code-tags-and-builds</a></p>
+<p>[4] Intel 公司开发的一种硬件辅助虚拟化引擎技术，可以缩短 Android 模拟器的启动时间，笔者新试使用前和使用后的启动时间大概从5分钟缩短到30秒，效果非常明显。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://yoursite.com/2016/12/22/鸟人的Android揭秘-4-——Android-源代码编译/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:yoursite.com">
+  </form>
+</div>
+
+  
+
+  
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2016 鸟人部落
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

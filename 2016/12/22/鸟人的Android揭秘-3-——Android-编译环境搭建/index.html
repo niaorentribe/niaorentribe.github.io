@@ -125,10 +125,8 @@
 <li><p>挂载磁盘<br>上述步骤创建的磁盘映像必须挂载后才能访问，编辑 ~/bash_profile脚本，在文件的最后添加如下工具函数</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 挂载android 磁盘映像</span></div><div class="line"><span class="keyword">function</span> mountAndroid &#123; hdiutil attach ~/android.dmg -mountpoint /Volumes/android; &#125;</div><div class="line"><span class="comment"># 卸载 android 磁盘映像</span></div><div class="line"><span class="keyword">function</span> <span class="function"><span class="title">umountAndroid</span></span>() &#123; hdiutil detach /Volumes/android; &#125;</div></pre></td></tr></table></figure>
 <p>  这样，每次系统重启后，只需在终端窗口执行 mountAndroid 即可挂载上述步骤创建的磁盘映像，执行 umountAndroid 即可卸载磁盘映像。如果不想每次都这么麻烦地输入这些命令，也可以在 ~/.bash_profile 脚本的最后再加上 mountAndroid，如下图所示。</p>
+<p>  <img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-4.png?raw=true" alt="编辑 ~/.bash_profile 添加工具函数"></p>
 </li>
-</ul>
-<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-4.png?raw=true" alt="编辑 ~/.bash_profile 添加工具函数"></p>
-<ul>
 <li><p>安装 Xcode Command Line Tools</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ xcode-select --install</div></pre></td></tr></table></figure>
 </li>
