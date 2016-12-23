@@ -53,6 +53,42 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2016-12-23T12:06:59.000Z"><a href="/2016/12/23/鸟人的Android揭秘-5-——搭建Android-SDK开发环境（一）/">2016-12-23</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2016/12/23/鸟人的Android揭秘-5-——搭建Android-SDK开发环境（一）/">鸟人的Android揭秘(5)——搭建Android SDK开发环境（一）</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>前面已经完整讲解了Android平台的构成，以及从Git服务器下载源代码并进行编译的内容。接下来讲解如何搭建Android SDK开发环境，包括Android Studio、Sublime、Android SDK等的下载与安装，这些都与Android应用程序开发与调试相关，可以极大的方便我们深入了解Android的源代码和运行机制。<br>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2016/12/23/鸟人的Android揭秘-5-——搭建Android-SDK开发环境（一）/#more" class="more-link">阅读全文</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2016-12-22T05:42:40.000Z"><a href="/2016/12/22/鸟人的Android揭秘-4-——Android-源代码编译/">2016-12-22</a></time>
       
       
@@ -63,63 +99,15 @@
     </header>
     <div class="entry">
       
-        <p>前文主要讲解了 Android 编译环境的搭建，接下来我们正式开始 Android 源代码的编译，主要涉及两部分内容：源代码的下载和源代码编译。</p>
-<h3 id="一、Android源代码下载"><a href="#一、Android源代码下载" class="headerlink" title="一、Android源代码下载"></a>一、Android源代码下载</h3><ol>
-<li><p>配置 Git 信息<br>将自己的姓名和邮箱信息配置到 Git 中，如果要使用 Gerrit 代码审查工具，邮箱必须是 Google 账号。[1]</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ git config --global user.name <span class="string">"你的姓名"</span></div><div class="line">$ git config --global user.email <span class="string">"你的邮箱"</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>安装 Repo<br>Android 源代码非常庞大，通过 Git 版本管理工具分成了 art、bionic、dalvik、frameworks 等多个代码仓库，如果分别使用 Git 逐个获取代码显示很麻烦，而 Repo 就是一个用来统一管理这些代码仓库的 Python 脚本工具，通过它可以很方便地同步 Android 源代码。</p>
-<p> 使用 curl 工具下载 Repo 脚本文件并更改运行权限</p>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ mkdir ~/bin</div><div class="line">$ PATH=~/bin:<span class="variable">$PATH</span>[2]</div><div class="line">$ curl https://storage.googleapis.com/git-repo-downloads/repo &gt; ~/bin/repo</div><div class="line">$ chmod a+x ~/bin/repo</div></pre></td></tr></table></figure>
-</li>
-<li><p>创建源代码存放目录<br>创建 Android 源代码存放目录，如果是在 Mac 操作系统上，该目录需要大小写敏感的文件系统中创建，请参考前文讲解的创建大小写敏感的磁盘映像一节内容。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ mkdir mydroid</div><div class="line">$ <span class="built_in">cd</span> mydroid</div></pre></td></tr></table></figure>
-</li>
-<li><p>初始化 Repo 工作目录<br>执行以下命令下载最新 Android 源代码的 manifest 信息，默认下载的是 master 分支，如果要下载其它分支的信息，需要指定 -b 参数，以下命令所示是下载最新的 android-7.1.1_r6分支[3]。初始化完成后即在当前目录自动创建 .repo 目录，里面已经包含所有必需的信息。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ repo init -u https://android.googlesource.com/platform/manifest -b android-7.1.1_r6</div></pre></td></tr></table></figure>
-</li>
-<li><p>最后执行以下命令即可开始下载 Android 的源代码</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ repo sync</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>Android 的整个源代码超过 50G，下载过程非常漫长。另外，由于国人都知道的原因，以上过程必须配置代理服务器。</p>
-<h3 id="二、Android源代码编译"><a href="#二、Android源代码编译" class="headerlink" title="二、Android源代码编译"></a>二、Android源代码编译</h3><p>Android 源代码下载完成后，即可开始编译。如果需要移植，则需要进行很多设置和修改。但如果只是搭建一个模拟环境，编译时，只需保持默认设置即可。进入 Android 源代码所在的目录，按照以下的步骤即可开始编译。</p>
-<ol>
-<li><p>初始化编译环境</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ <span class="built_in">source</span> build/envsetup.sh</div></pre></td></tr></table></figure>
-<p> 或者将 source 用 . 代替也可以</p>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ . build/envsetup.sh</div></pre></td></tr></table></figure>
-</li>
-<li><p>选择目标配置<br>编译配置的类型说明如下：</p>
-<p> <img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-4-1.png?raw=true" alt="编译配置说明"></p>
-<p> 市面大多数手机都采用 arm 架构，如果希望编译后的 img 文件可以刷到手机上，需要使用带 arm 标识的配置，如下</p>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ lunch aosp_arm-eng</div></pre></td></tr></table></figure>
-<p> 笔者后续将讲解如何用模拟器加载编译生成的 img 文件，并使用 HAX（Intel Hardware Accelerated Execution）[4]加速模拟器运行，所以此处使用 x86的配置</p>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">lunch aosp_x86_64-eng</div></pre></td></tr></table></figure>
-</li>
-<li><p>开始编译<br>直接执行 make 命令即可开始编译，make 命令后面的 -jN 表示启用多少个并行任务同时进行编译</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ make -j4</div></pre></td></tr></table></figure>
-<p> 在笔者的编译环境下，编译结果如下图所示。</p>
-<p> <img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-5.png?raw=true" alt="成功编译Android源代码显示的信息"></p>
-<p> 第一次完整编译会非常耗时，笔者使用的是 Mac 系统、i7的CPU、8G的内存、固态硬盘，但仍然用了3个多小时。后续如果对源代码做一些修改，因为使用了前面的一些编译结果，再次编译的时间就不会这么长。如果要确保修改的结果会被编译进去，可以使用以下命令将前面的编译结果全部清除，但再次编译又需要经历漫长的等待。</p>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ make clobber</div></pre></td></tr></table></figure>
-<p> Android 源代码编译的产物中最重要的是三个镜像文件，它们都位于 /out/target/product/<product_name>/ 目录下，分别是：</product_name></p>
-<ul>
-<li>system.img：包含了 Android OS 的系统文件、库、可执行文件以及预置的应用程序，将被挂载为根分区。</li>
-<li>ramdisk.img：在启动时将被 Linux 内核挂载为只读分区，它包含了 /init 文件和一些配置文件。它用来挂载其他系统镜像并启动 init 进程。</li>
-<li>userdata.img：将被挂载为 /data，包含了应用程序相关的数据以及和用户相关的数据。</li>
-</ul>
-</li>
-</ol>
-<p>[1] Git 的配置信息可在 ~/.gitconfig 文件中看到。</p>
-<p>[2] 此处设置只对当前的终端窗口有效，如想长期有效，在 Mac 系统上需在 ~/.bash_profile 中设置，而 Ubuntu 系统则需在 ~/.bashrc 中设置。</p>
-<p>[3] Android 源代码的标签和分支信息可在以下网址查看：<a href="http://source.android.com/source/build-numbers.html#source-code-tags-and-builds" target="_blank" rel="external">http://source.android.com/source/build-numbers.html#source-code-tags-and-builds</a></p>
-<p>[4] Intel 公司开发的一种硬件辅助虚拟化引擎技术，可以缩短 Android 模拟器的启动时间，笔者新试使用前和使用后的启动时间大概从5分钟缩短到30秒，效果非常明显。</p>
-
+        <p>前文主要讲解了 Android 编译环境的搭建，接下来我们正式开始 Android 源代码的编译，主要涉及两部分内容：源代码的下载和源代码编译。<br>
       
     </div>
     <footer>
       
+        
+          <div class="alignleft">
+            <a href="/2016/12/22/鸟人的Android揭秘-4-——Android-源代码编译/#more" class="more-link">阅读全文</a>
+          </div>
         
         
       
@@ -147,105 +135,15 @@
     </header>
     <div class="entry">
       
-        <p>编译 Android 平台对硬件和软件都有一定的要求，本文主要讲解这些要求和具体环境的搭建。</p>
-<h3 id="一、主机环境要求"><a href="#一、主机环境要求" class="headerlink" title="一、主机环境要求"></a>一、主机环境要求</h3><p>要顺利编译 Android 源代码，硬件环境和操作系统都必须满足一定的条件。官方推荐的硬件环境配置是：</p>
-<ul>
-<li>编译 Gingerbread（2.3.x）及后续版本必须使用64位系统</li>
-<li>需至少留出100G 的磁盘空间用于迁出（checkout）Android 源代码，如编译单个版本，需至少留出150G 的磁盘空间，如编译多个版本，则需留出至少200G 的磁盘空间。如果启用了 ccache（complier cache，编译器高速缓存工具），所需的磁盘空间就必须更大。</li>
-<li>如使用 Linux 系统，RAM/swap 加起来必须不小于16G</li>
-</ul>
-<p>由上可见，编译 Android 源代码所需的硬件环境要求还是比较高的，但笔者使用 Mac 系统，在克隆出一块100G 的空间后，迁出并编译完 Android 源代码，仍然留有10几 G 的剩余空间，可见官方推荐配置只是建议，并非强制要求。</p>
-<p>对于操作系统，Android 可以在 GNU/Linux 或 Mac 操作系统上编译，但编译不同的 Android 版本对操作系统的要求也不同，具体要求如下：</p>
-<ul>
-<li>GNU/Linux：<ul>
-<li>Android 6.0 (Marshmallow) - AOSP master：Ubuntu 14.04 (Trusty)[1]</li>
-<li>Android 2.3.x (Gingerbread) - Android 5.x (Lollipop)：Ubuntu 12.04 (Precise)</li>
-<li>Android 1.5 (Cupcake) - Android 2.2.x (Froyo)：Ubuntu 10.04 (Lucid)</li>
-</ul>
-</li>
-<li>Mac OS (Intel/x86)：<ul>
-<li>Android 6.0 (Marshmallow) – AOSP master：Mac OS v10.10 (Yosemite)及后续版本，Xcode 4.5.2，Command Line Tools（Xcode 中的一款工具，可以在命令行中运行C程序）</li>
-<li>Android 5.x (Lollipop)：Mac OS v10.8 (Mountain Lion)，Xcode 4.5.2，Command Line Tools</li>
-<li>Android 4.1.x-4.3.x (Jelly Bean) - Android 4.4.x (KitKat)：Mac OS v10.6 (Snow Leopard) 或者 Mac OS X v10.7 (Lion)，Xcode 4.2</li>
-<li>Android 1.5 (Cupcake) - Android 4.0.x (Ice Cream Sandwich)：Mac OS v10.5 (Leopard)或者Mac OS X v10.6 (Snow Leopard)，Mac OS X v10.5 SDK</li>
-</ul>
-</li>
-</ul>
-<h3 id="二、安装-VirtualBox"><a href="#二、安装-VirtualBox" class="headerlink" title="二、安装 VirtualBox"></a>二、安装 VirtualBox</h3><p>编译 Android 源代码要求必须使用 GNU/Linux 操作系统，对于条件允许的读者来说，最方便的方式莫过于直接基于 Ubuntu/Mac系统进行操作。如果是使用 Windows 操作系统的读者，我们也有办法解决，可以先在 Windows 操作系统上安装虚拟机软件，然后再基于此虚拟机软件上安装 Ubuntu 操作系统。</p>
-<p>VirtualBox 是由 Oracle（甲骨文）公司提供的一款开源、免费的虚拟机软件，与其它虚拟机软件相比更轻巧、更新速度快、运行速度更快，有 Windows、OS X、Linux、Solaris等版本。读者可以从以下网址直接下载：<a href="https://www.virtualbox.org/wiki/Downloads" target="_blank" rel="external">https://www.virtualbox.org/wiki/Downloads</a>，安装界面如下图所示[2]，安装过程按照软件界面提示操作即可。</p>
-<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-1.png?raw=true" alt="VirtualBox 安装界面"></p>
-<p>成功安装 VirtualBox 后，运行它，点击界面左上角的“新建(N)”按钮，即可新建虚拟机。在“虚拟电脑名称和系统类型”界面中，选择类型为 Linux，版本为 Ubuntu (64-bit)，如下图所示。在创建虚拟机时，内存和硬盘尽量选择大一些，此处笔者设置内存为2G，而硬盘空间设置为100G[3]。</p>
-<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-2.png?raw=true" alt="创建虚拟机"></p>
-<h3 id="三、安装-Ubuntu"><a href="#三、安装-Ubuntu" class="headerlink" title="三、安装 Ubuntu"></a>三、安装 Ubuntu</h3><p>Ubuntu（乌班图）是一个以桌面应用为主的免费开源的 Linux 操作系统，应用非常广泛，有32位和64位两种版本，读者从以下网址可以下载：<a href="https://www.ubuntu.com/download/desktop" target="_blank" rel="external">https://www.ubuntu.com/download/desktop</a>。</p>
-<p>使用虚拟机的好处是可以直接从下载好的 ISO 映像文件安装 Ubuntu 系统。在 VirtualBox 中选择创建好的虚拟机，点击“设置(S)”按钮，在弹出的设置窗口中，切换到存储标签页，再在 IDE 控制器属性的虚拟光驱中，选择下载的 Ubuntu 映像文件[4]，如下图所示。设置完成后，单击“启动(T)”按钮，即可在虚拟机中安装 Ubuntu。</p>
-<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-3.png?raw=true" alt="在VirtualBox 存储设置中选择 Ubuntu ISO 映像"></p>
-<p>Ubuntu（乌班图）是一个以桌面应用为主的 Linux 操作系统，其名称来自非洲南部祖鲁语或豪萨语的“ubuntu”一词，意思是“人性”、“我的存在是因为大家的存在”，是非洲传统的一种价值观，类似华人社会的“仁爱”思想。Ubuntu 基于Debian发行版和GNOME桌面环境，而从11.04版起，Ubuntu 发行版放弃了 Gnome 桌面环境，改为Unity，与Debian的不同在于它每6个月会发布一个新版本。Ubuntu 的目标在于为一般用户提供一个最新的、同时又相当稳定的主要由自由软件构建而成的操作系统。Ubuntu 具有庞大的社区力量，用户可以方便地从社区获得帮助。2013年1月3日，Ubuntu 正式发布面向智能手机的移动操作系统。</p>
-<h3 id="四、搭建-Android-编译环境"><a href="#四、搭建-Android-编译环境" class="headerlink" title="四、搭建 Android 编译环境"></a>四、搭建 Android 编译环境</h3><p>前面我们讲解了 VirtualBox 虚拟机的安装，以及如何在虚拟机上安装 Ubuntu 操作系统的相关知识。下面我们将讲解编译 Android 平台所需的工具和具体的编译方法。</p>
-<h4 id="4-1-编译环境搭建"><a href="#4-1-编译环境搭建" class="headerlink" title="4.1 编译环境搭建"></a>4.1 编译环境搭建</h4><p>在 Ubuntu 中编译 Android 平台，首先需要安装配置如下工具[5]：</p>
-<ul>
-<li><p>安装 JDK 1.8，在 Ubuntu 上使用 OpenJDK 即可</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get update</div><div class="line">$ sudo apt-get install openjdk-8-jdk</div></pre></td></tr></table></figure>
-</li>
-<li><p>配置 JDK 的版本，如系统存在多个版本，则切换为 JDK1.8</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ sudo update-alternatives --config java</div><div class="line">$ sudo update-alternatives --config javac</div></pre></td></tr></table></figure>
-</li>
-<li><p>安装必需的工具包</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get install git-core gnupg flex bison gperf build-essential \</div><div class="line">    zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 \</div><div class="line">    lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev ccache \</div><div class="line">    libgl1-mesa-dev libxml2-utils xsltproc unzip python-networkx</div></pre></td></tr></table></figure>
-</li>
-<li><p>配置 USB</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ wget -S -O - http://source.android.com/<span class="built_in">source</span>/51-android.rules | sed <span class="string">"s/&lt;username&gt;/<span class="variable">$USER</span>/"</span> | sudo tee &gt;/dev/null /etc/udev/rules.d/51-android.rules; sudo udevadm control --reload-rules</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>通过以上步骤，我们即完成了对 Ubuntu 操作系统上 Android 编译环境的搭建，下面继续讲解 Mac 系统的环境搭建。</p>
-<p>由于 Mac 操作系统默认大小写不敏感，而 Android 源代码所使用的版本管理工具 git 要求工作在大小写敏感的环境里，基于此，如果读者如想在 Mac 系统上编译 Android 源代码，需做如下设置：</p>
-<ul>
-<li><p>创建一个大小写敏感、大小为100G 的磁盘映像，借助 Mac 系统提供的磁盘工具可以很容易做到</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># hdiutil create -type SPARSE -fs 'Case-sensitive Journaled HFS+' -size 100g ~/android.dmg</span></div></pre></td></tr></table></figure>
-<p>  后续如需修改该磁盘映像的大小，可通过以下命令完成</p>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># hdiutil resize -size &lt;新的磁盘大小&gt;g ~/android.dmg.sparseimage</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>挂载磁盘<br>上述步骤创建的磁盘映像必须挂载后才能访问，编辑 ~/bash_profile脚本，在文件的最后添加如下工具函数</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 挂载android 磁盘映像</span></div><div class="line"><span class="keyword">function</span> mountAndroid &#123; hdiutil attach ~/android.dmg -mountpoint /Volumes/android; &#125;</div><div class="line"><span class="comment"># 卸载 android 磁盘映像</span></div><div class="line"><span class="keyword">function</span> <span class="function"><span class="title">umountAndroid</span></span>() &#123; hdiutil detach /Volumes/android; &#125;</div></pre></td></tr></table></figure>
-<p>  这样，每次系统重启后，只需在终端窗口执行 mountAndroid 即可挂载上述步骤创建的磁盘映像，执行 umountAndroid 即可卸载磁盘映像。如果不想每次都这么麻烦地输入这些命令，也可以在 ~/.bash_profile 脚本的最后再加上 mountAndroid，如下图所示。</p>
-<p>  <img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-4.png?raw=true" alt="编辑 ~/.bash_profile 添加工具函数"></p>
-</li>
-<li><p>安装 Xcode Command Line Tools</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ xcode-select --install</div></pre></td></tr></table></figure>
-</li>
-<li><p>安装 MacPorts 工具<br>从以下网址下载相应的版本安装：<a href="https://www.macports.org/install.php" target="_blank" rel="external">https://www.macports.org/install.php</a><br>安装完成后，确保在环境变量 PATH 中，/opt/local/bin 必须出现在/usr/bin 之前（/opt/local/bin 为 MacPorts 的安装路径），添加以下脚本到 ~/.bash_profile 中</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">export</span> PATH=/opt/<span class="built_in">local</span>/bin:<span class="variable">$PATH</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>通过 MacPorts 安装make、git、GPG 等工具包</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ POSIXLY_CORRECT=1 sudo port install gmake libsdl git gnupg</div></pre></td></tr></table></figure>
-</li>
-<li><p>回退 gmake 版本<br>Mac 系统默认的 gmake 版本是3.82，但此版本中有 bug，会导致编译 Android 源代码失败，所以我们必须先将 gmake 版本回退到3.81  </p>
-<ul>
-<li><p>编辑 /opt/local/etc/macports/sources.conf 文件，在 rsync 一行上边添加如下代码</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">file:///Users/Shared/dports</div></pre></td></tr></table></figure>
-</li>
-<li><p>在终端窗口中执行以下命令创建目录</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ mkdir /Users/Shared/dports</div></pre></td></tr></table></figure>
-</li>
-<li><p>按顺序执行以下命令完成 gmake 的安装</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ svn co --revision 50980  http://svn.macports.org/repository/macports/trunk/dports/devel/gmake/ devel/gmake/</div><div class="line">$ portindex /Users/Shared/dports</div><div class="line">$ sudo port install gmake @3.81</div></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>调整文件描述符的大小限制<br>Mac 操作系统上默认允许同时打开的文件描述符数限制较低，而 Android 源代码编译时会启动大量线程进行并行编译，其打开的文件描述符可能超过此限制导致编译失败，编辑 ~/.bash_profile 加入如下命令可解决此问题</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 设置允许同时打开的文件数量为1024</span></div><div class="line"><span class="built_in">ulimit</span> -S -n 1024</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>至此，我们就完成了对 Mac 系统上 Android 平台编译环境的搭建，接下来我们将讲解源代码下载和编译。</p>
-<p>[1] 笔者写此书时最新的 Android 版本为7.1，最新 Ubuntu 版本为16.04.1，后续如无特殊说明，均以这两个版本为例。</p>
-<p>[2] 笔者使用的是 Mac 操作系统演示安装过程，其它操作系统上安装 VirtalBox 的过程与此类似。</p>
-<p>[3]虚拟机创建后，内存仍可以再调整，但硬盘空间无法再设置，在宿主机允许的情况下尽量设置大一些。读者也无需担心空间浪费，虚拟机的磁盘空间是动态分配的，实际使用多少就是多少，最大不超过此处设置。</p>
-<p>[4] 本书中使用 ubuntu-16.04.1-desktop-amd64.iso</p>
-<p>[5] 此处仅讲解编译 Android 7.1所需的环境，读者如想编译其它版本，可自行参考<a href="http://source.android.com/source/initializing.html" target="_blank" rel="external">http://source.android.com/source/initializing.html</a></p>
-
+        <p>编译 Android 平台对硬件和软件都有一定的要求，本文主要讲解这些要求和具体环境的搭建。<br>
       
     </div>
     <footer>
       
+        
+          <div class="alignleft">
+            <a href="/2016/12/22/鸟人的Android揭秘-3-——Android-编译环境搭建/#more" class="more-link">阅读全文</a>
+          </div>
         
         
       
@@ -274,42 +172,15 @@
     <div class="entry">
       
         <p>Android源代码数量极其庞大，以最新的 Android 7.1 为例，代码数量超过 50G。若想理解和掌握如此庞大的 Android 系统，将需要耗费大量的时间和精力，付出极大的努力。关键是到目前为止也没有相对完整的资料对 Android Framework 作系统性讲解说明。</p>
-<p>那么，我们应该如何去分析 Android Framework 的代码呢？回答这个问题之前，先回想一下通常我们是如何分析他人编写的代码。在分析代码时，一般来说我们都会从程序的入口 main 函数开始，一点一点地理清程序的流程，掌握程序运行的过程。同样的，在分析结构庞大的 Android Framework 代码时，我们也要从 Android 平台的启动过程入手。 Android 启动过程包含从 Linux 内核加载到 Android Runtime 启动再到 Launcher 应用启动的整个过程，依次分析这一过程，有利于我们系统地理解 Android Framework 运行的原理。</p>
-<p>如下图所示简单描述了 Android 的启动过程，后续章节所讲解 Android Framework 的初始化过程和各模块之间如何相互作用乖内容时，均以此图所描述的启动过程为基础。</p>
-<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/1/1-3.png?raw=true" alt="Android启动过程"></p>
-<p>以下对照图简单地讲解一下。</p>
-<h5 id="1-Linux-内核"><a href="#1-Linux-内核" class="headerlink" title="1. Linux 内核"></a>1. Linux 内核</h5><p>Android 是基于 Linux 内核的系统平台。启动时，首先通过 bootloader （系统加载器）加载 Linux 内核。在 Linux 加载启动时，与普通的 Linux 启动过程相同，先初始化内核，然后调用 init 进程。</p>
-<h5 id="2-Init"><a href="#2-Init" class="headerlink" title="2. Init"></a>2. Init</h5><p>Android init 是内核启动后创建的第一个用户空间进程，负责对各种设备进行初始化，运行 Android Framework 所需用的各种 Daemon、Context Manager、Media Server、Zygote等。</p>
-<p>以下是 init 进程启动的 Daemon 进程：</p>
-<ul>
-<li>UEvent Daemon (ueventd)：监听内核发出的uevent创建相应的设备节点文件</li>
-<li>Debuger Daemon (debuggerd)：启动Debugger系统</li>
-<li>Android Debug Bridge Daemon (adbd)：Android Debug Bridge连接管理</li>
-<li>Radio Interface Layer Daemon (rild)：无线通讯连接管理</li>
-<li>Log Daemon (logd)：日志管理</li>
-<li>Health Daemon (healthd)：系统健康管理，监听系统电量信息</li>
-</ul>
-<h5 id="3-Context-Manager"><a href="#3-Context-Manager" class="headerlink" title="3. Context Manager"></a>3. Context Manager</h5><p>Context Manager 是一个管理 Android 系统服务的重要进程。系统服务是组成 Android Framework 的重要组成部分，提供从相机、音频、视频处理到各种应用程序制作所需的重要 API。</p>
-<p>在系统启动时，Android 所有运行的服务都要把各自的信息注册到 Context Manager。应用程序或 Android Framework 内部模块在调用系统服务时，都需要先向 Context Manager 查询服务，然后再通过 Binder IPC（interprocess communication，应用间通信）调用相应的服务。</p>
-<h5 id="4-Media-Server"><a href="#4-Media-Server" class="headerlink" title="4. Media Server"></a>4. Media Server</h5><p>Media Server 用于运行基于 C/C++ 的本地系统服务，如 Media Player Service、Resource Manager Service等。</p>
-<h5 id="5-Zygote"><a href="#5-Zygote" class="headerlink" title="5. Zygote"></a>5. Zygote</h5><p>Zygote 进程用于缩短 Android 应用程序的加载时间。每当有 Android 程序需要执行时，Zygote 接收到请求后就会派生出一个子进程来执行应用程序。由于 Zygote 预先加载了应用程序所需的系统资源，派生出的子进程也共享这些资源，因而节省了系统资源重复加载的时间。</p>
-<h5 id="6-System-Server"><a href="#6-System-Server" class="headerlink" title="6. System Server"></a>6. System Server</h5><p>System Server 是由 Zygote 进程创建一个 Android 系统的核心进程。在 System Server 中可以看到它启动了 Android 系统中的大部分服务，如 VR Manager Service（管理系统VR模式切换）、Display Manager Service（支持多种显示类型的多个显示器的镜像显示）等。</p>
-<p>为了将运行在 System Server 中的 Java 系统服务提供给 Android 应用程序或 Framework 内部模块调用，需要将这些服务先注册到 Context Manager中。</p>
-<p>在通过 Binder IPC 将 Java 系统服务注册到基于 C/C++ 的服务管理器时，需要使用 JNI（Java Native Interface）编程接口。</p>
-<h5 id="7-Server"><a href="#7-Server" class="headerlink" title="7. Server"></a>7. Server</h5><p>Init 进程启动后将创建出以下本地服务：  </p>
-<ul>
-<li>Audio Server (audioserver)：管理音频输入输出</li>
-<li>Camera Server (cameraserver)：管理相机功能</li>
-<li>DRM Server (drmserver)：DRM（Digital Rights Management）数字版权管理</li>
-<li>Media DRM Server (mediadrmserver)：多媒体数字版权管理</li>
-</ul>
-<p>由 Init 进程启动的以上服务也需要注册到服务管理器中才能被系统其它模块所使用，但区别于由 System Server 启动服务的注册方式，本地系统服务直接通过 Binder IPC 注册即可。</p>
-<p>以上就是对 Android 启动过程以及 Framework 初始化的简单介绍，当然这仅仅是 Android 启动过程的一部分。在所有 Java 系统服务加载完毕后，Activity Manager 会运行 Launcher 应用，继续启动过程。当 Launcher 应用启动完毕后，也就可以看到我们熟悉的 Android 系统桌面，此部分已经超出了本文的讨论范围，读者如有兴趣请参照 Android 源代码进行分析。</p>
-
+<p>那么，我们应该如何去分析 Android Framework 的代码呢？回答这个问题之前，先回想一下通常我们是如何分析他人编写的代码。在分析代码时，一般来说我们都会从程序的入口 main 函数开始，一点一点地理清程序的流程，掌握程序运行的过程。同样的，在分析结构庞大的 Android Framework 代码时，我们也要从 Android 平台的启动过程入手。 Android 启动过程包含从 Linux 内核加载到 Android Runtime 启动再到 Launcher 应用启动的整个过程，依次分析这一过程，有利于我们系统地理解 Android Framework 运行的原理。<br>
       
     </div>
     <footer>
       
+        
+          <div class="alignleft">
+            <a href="/2016/12/21/鸟人的Android揭秘-2-——通过启动过程分析-Android-Framework/#more" class="more-link">阅读全文</a>
+          </div>
         
         
       
@@ -337,42 +208,15 @@
     </header>
     <div class="entry">
       
-        <p>如果你有过开发 Android 应用程序的经验，即使你对 Android Framework 掌握得不深，通过谷歌提供的 Android SDK，也能非常容易地开发出基于Android的交互应用程序。这得益于 Android 为开发者提供了一套定义良好的软件框架，开发者即使不具备特别高深的专业知识，在短时间内同样能开发出强大的 Android 应用程序。​</p>
-<p><img src="https://raw.githubusercontent.com/niaorentribe/blogimg/master/android/framework/1/1-1.png" alt="Android系统框架图"></p>
-<p>如上图所示是 Android 系统框架图，由下往上分为5层，依次为Linux内核层、硬件抽象层、系统运行库层、Java API 框架层和应用程序层。</p>
-<p>观察 Android 系统框架图可以发现，其提供的系统应用程序（Dialer、Email、Calendar、Camera等）都运行在 Java API 框架层之上。同样，开发者借助 Android SDK 开发出的应用程序也运行在Java API 框架层之上。</p>
-<p>如果你想成为一名优秀的 Android 平台应用程序开发者，那么你很有必要深入了解学习 Android 框架。Android 是一个真正开放的移动开发平台，访问其网站<a href="http://source.android.com" target="_blank" rel="external">http://source.android.com</a>即可轻松获取源代码。每个硬件厂商可以根据自身需要定制基本的 Android 框架，开发出与竞争对手不同的产品。这样，若想构建基于 Android 框架的个性化移动终端系统，则必须对 Android 框架进行系统、全面地学习与研究。</p>
-<p>Android 主要源代码组成如下：</p>
-<ul>
-<li>abi                    abi（application binary interface，应用程序二进制接口）相关代码，描述了应用程序和操作系统之间，应用程序和它的库之间，以及应用程序各组成部分之间的接口</li>
-<li>art                    Android Runtime，Android 4.4 之后支持</li>
-<li>bionic                 Android 标准C运行支持库</li>
-<li>bootable               Android 启动引导相关代码</li>
-<li>build                  存放 Android 系统编译规则及generic等基础开发包配置</li>
-<li>cts                    Android 兼容性测试源</li>
-<li>dalvik                 Dalvik 虚拟机</li>
-<li>development            应用程序开发相关</li>
-<li>device                 Android 对要编译产品的配置目录</li>
-<li>docs                   介绍开源的相关文档</li>
-<li>external               Android 使用的开放源</li>
-<li>frameworks             Android核心框架</li>
-<li>hardware               Android HAL（Hardware Abstraction Layer，硬件抽象层）库源</li>
-<li>libcore                Android 的核心库</li>
-<li>libnativehelper        Android 类库的支持函数</li>
-<li>ndk                    Android NDK（Android Native Development Kit）是一系列的开发工具，允许程序开发人员在Android应用程序中嵌入C/C++语言编写的非托管代码</li>
-<li>packages               包含 Android 基本应用，Content Provider 等</li>
-<li>pdk                    Android pdk（Platform Development Kit，平台开发套件），仅包含开发 Android HAL 的必要组件，用于帮助芯片提供商和 OEM 厂商顺利迁移到新的 Android 版本</li>
-<li>prebuilts              x86 和 arm 架构下预编译的一些资源</li>
-<li>sdk                    sdk 及模拟器</li>
-<li>system                 Android 初始化进程、蓝牙工具集等</li>
-<li>toolchain              Android 的交叉编译工具</li>
-<li>tools                  Android 工具包</li>
-</ul>
-
+        <p>如果你有过开发 Android 应用程序的经验，即使你对 Android Framework 掌握得不深，通过谷歌提供的 Android SDK，也能非常容易地开发出基于Android的交互应用程序。这得益于 Android 为开发者提供了一套定义良好的软件框架，开发者即使不具备特别高深的专业知识，在短时间内同样能开发出强大的 Android 应用程序。​<br>
       
     </div>
     <footer>
       
+        
+          <div class="alignleft">
+            <a href="/2016/12/21/鸟人的Android揭秘-1-——源代码构成/#more" class="more-link">阅读全文</a>
+          </div>
         
         
       

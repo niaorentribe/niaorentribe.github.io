@@ -1,0 +1,182 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>鸟人的Android揭秘(5)——搭建Android SDK开发环境（一） | 鸟人私房菜</title>
+  <meta name="author" content="鸟人部落">
+  
+  <meta name="description" content="心灵净土 思考感悟">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="鸟人的Android揭秘(5)——搭建Android SDK开发环境（一）"/>
+  <meta property="og:site_name" content="鸟人私房菜"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="鸟人私房菜" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">鸟人私房菜</a></h1>
+  <h2><a href="/"></a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+    <li><a href="/atom.xml">RSS</a></li>
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2016-12-23T12:06:59.000Z"><a href="/2016/12/23/鸟人的Android揭秘-5-——搭建Android-SDK开发环境（一）/">2016-12-23</a></time>
+      
+      
+  
+    <h1 class="title">鸟人的Android揭秘(5)——搭建Android SDK开发环境（一）</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>前面已经完整讲解了Android平台的构成，以及从Git服务器下载源代码并进行编译的内容。接下来讲解如何搭建Android SDK开发环境，包括Android Studio、Sublime、Android SDK等的下载与安装，这些都与Android应用程序开发与调试相关，可以极大的方便我们深入了解Android的源代码和运行机制。<br><a id="more"></a></p>
+<h3 id="一、安装Android-Studio"><a href="#一、安装Android-Studio" class="headerlink" title="一、安装Android Studio"></a>一、安装Android Studio</h3><p>自从Google停止对ADT的更新后， Eclipse已经不是开发Android应用程序的首先环境，要配合最新的Android SDK，最佳选择是使用Google主推的Android Studio，Windows、Linux和Mac平台都有相应的版本，从以下网址即可下载：<a href="https://developer.android.com/studio/index.html" target="_blank" rel="external">https://developer.android.com/studio/index.html</a>。如下图所示，Windows和Mac版本都有相应的安装版本，下载安装即可，Linux是zip压缩包版本，下载后解压缩即可使用。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-6.png?raw=true" alt="下载Android Studio版本"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">-Xms1024m</div><div class="line">-Xmx1024m</div></pre></td></tr></table></figure>
+<p>Android Studio发展到现在已经很智能化，替用户省了不少麻烦，第一次启动时后根据引导设置Android SDK存放路径，如下图所示。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-7.png?raw=true" alt="Android Studio安装引导"></p>
+<p>如果没有预先下载Android SDK，安装引导将协助下载最新的SDK版本和必需的组件，如下图所示。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-8.png?raw=true" alt="Android Studio引导下载Android SDK"></p>
+<p>安装完成后，就可以正式进入Android Studio，创建自己的第一个Android应用程序，Android Studio也提供了很好用的应用创建引导，只要按照引导流程一步一步设置下去即可轻松创建出自己的第一个Android应用。如图2-9所示是笔者创建的“Hello World”应用并在模拟器中运行的效果，可见，通过Android Studio开发Android应用程序是非常方便的。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-9.png?raw=true" alt="第一个Android应用程序"></p>
+<h3 id="二、加速Android模拟器的启动"><a href="#二、加速Android模拟器的启动" class="headerlink" title="二、加速Android模拟器的启动"></a>二、加速Android模拟器的启动</h3><p>要做好Android应用程序的开发，或者Android Framework的开发，最好手头备有一部Android手机，毕竟真实场景中的情况不是模拟器都可以模拟出来的。但如果条件不具备，我们也可以用模拟器来暂时解决。</p>
+<p>如果不做任何处理，在电脑上启动Android模拟器将是一个痛苦的等待过程，且模拟器启动后的响应也很迟钝，基本不能用于开发调试。幸好Android Studio中集成了Intel x86 Emulator Accelerator (HAXM installer)工具，安装后可以大大加快模拟器的启动速度[1]。</p>
+<p>这个工具默认不随Android Studio一块安装，需要用户自行操作安装，不过安装过程很简单，点击Android Studio主菜单的“Preferences…”菜单项，打开配置窗口，切换到Android SDK一项，并在SDK的更新窗口中，切换到“SDK Tools”一栏，勾选其中的“Intel x86 Emulator Accelerator (HAXM installer)”一项，如下图所示。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-10.png?raw=true" alt="Intel x86 Emulator Accelerator (HAXM installer)安装"></p>
+<p>接着点击“Apply”按钮，Android Studio将弹出确认框，提示将开始安装该工具，如下图所示。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-11.png?raw=true" alt="Intel x86 Emulator Accelerator (HAXM installer)安装"></p>
+<p>继续点击“OK”按钮，Android Studio将开始下载并安装。在安装过程中需要配置HAXM（Hardware Accelerated Execution Manager）最大可使用的内存，如下图所示。Intel官方推荐将其设置为本机物理内存的一半。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-12.png?raw=true" alt="Intel x86 Emulator Accelerator (HAXM installer)安装"></p>
+<p>安装完成后，在终端窗口使用如下命令确认加速器是否已经启动<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">kextstat | grep intelhaxm</div></pre></td></tr></table></figure></p>
+<p>如果出现类似下图所示提示，即表示HAXM安装成功并且已经正常运行。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-13.png?raw=true" alt="HAXM正常运行"></p>
+<p>通过以下命令可以启动和停止HAXM：</p>
+<pre><code class="bash"><span class="comment"># Start:</span>
+$ sudo kextload –b com.intel.kext.intelhaxm
+<span class="comment"># Stop:</span>
+sudo kextunload –b com.intel.kext.intelhaxm
+</code></pre>
+<p>[1] 在笔者的环境中，安装HAXM前模拟器的启动时间大约是5分名，安装HAXM后模拟器的启动时间缩短到30秒左右。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://niaorentribe.github.io/2016/12/23/鸟人的Android揭秘-5-——搭建Android-SDK开发环境（一）/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:niaorentribe.github.io">
+  </form>
+</div>
+
+  
+
+  
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2016 鸟人部落
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
