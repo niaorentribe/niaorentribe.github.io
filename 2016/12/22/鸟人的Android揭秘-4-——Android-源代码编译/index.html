@@ -6,9 +6,7 @@
   <title>鸟人的Android揭秘(4)——Android 源代码编译 | 鸟人私房菜</title>
   <meta name="author" content="鸟人部落">
   
-  <meta name="description" content="前文主要讲解了 Android 编译环境的搭建，接下来我们正式开始 Android 源代码的编译，主要涉及两部分内容：源代码的下载和源代码编译。
-一、Android源代码下载
-配置 Git 信息将自己的姓名和邮箱信息配置到 Git 中，如果要使用 Gerrit 代码审查工具，邮箱必须是 Google">
+  <meta name="description" content="心灵净土 思考感悟">
   
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -41,6 +39,7 @@
     
       <li><a href="/archives">Archives</a></li>
     
+    <li><a href="/atom.xml">RSS</a></li>
   </ul>
   <div class="clearfix"></div>
 </nav>
@@ -90,7 +89,9 @@
 <p> 或者将 source 用 . 代替也可以</p>
  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ . build/envsetup.sh</div></pre></td></tr></table></figure>
 </li>
-<li><p>选择目标配置<br>编译配置的类型说明如下：<br> 类型 | 目的<br> —|—<br> user | 生产版本，具有有限的访问权限<br> userdebug | 调试版本，和生产版本类似，但具有 root 权限和可调试性<br> eng | 开发版本，带有额外的调试工具<br> 市面大多数手机都采用 arm 架构，如果希望编译后的 img 文件可以刷到手机上，需要使用带 arm 标识的配置，如下</p>
+<li><p>选择目标配置<br>编译配置的类型说明如下：</p>
+<p> <img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-4-1.png?raw=true" alt="编译配置说明"></p>
+<p> 市面大多数手机都采用 arm 架构，如果希望编译后的 img 文件可以刷到手机上，需要使用带 arm 标识的配置，如下</p>
  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ lunch aosp_arm-eng</div></pre></td></tr></table></figure>
 <p> 笔者后续将讲解如何用模拟器加载编译生成的 img 文件，并使用 HAX（Intel Hardware Accelerated Execution）[4]加速模拟器运行，所以此处使用 x86的配置</p>
  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">lunch aosp_x86_64-eng</div></pre></td></tr></table></figure>
@@ -160,7 +161,7 @@
   }(document, 'script', 'facebook-jssdk'));
 </script>
 
-<div class="fb-comments" data-href="http://yoursite.com/2016/12/22/鸟人的Android揭秘-4-——Android-源代码编译/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+<div class="fb-comments" data-href="http://niaorentribe.github.io/2016/12/22/鸟人的Android揭秘-4-——Android-源代码编译/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
       
   
 </section>
@@ -170,7 +171,7 @@
   <div class="search">
   <form action="//google.com/search" method="get" accept-charset="utf-8">
     <input type="search" name="q" results="0" placeholder="搜索">
-    <input type="hidden" name="q" value="site:yoursite.com">
+    <input type="hidden" name="q" value="site:niaorentribe.github.io">
   </form>
 </div>
 
