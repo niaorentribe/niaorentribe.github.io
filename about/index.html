@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>鸟人的Android揭秘(1)——源代码构成 | 鸟人私房菜</title>
+  <title>about | 鸟人私房菜</title>
   <meta name="author" content="鸟人部落">
   
   <meta name="description" content="心灵净土 思考感悟">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <meta property="og:title" content="鸟人的Android揭秘(1)——源代码构成"/>
+  <meta property="og:title" content="about"/>
   <meta property="og:site_name" content="鸟人私房菜"/>
 
   
@@ -48,69 +48,26 @@
 <div class="clearfix"></div>
 </header>
   <div id="content" class="inner">
-    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="page">
   
   <div class="post-content">
     <header>
       
-        <div class="icon"></div>
-        <time datetime="2016-12-21T09:01:46.000Z"><a href="/2016/12/21/鸟人的Android揭秘-1-——源代码构成/">2016-12-21</a></time>
-      
       
   
-    <h1 class="title">鸟人的Android揭秘(1)——源代码构成</h1>
+    <h1 class="title">about</h1>
   
 
     </header>
     <div class="entry">
       
-        <p>如果你有过开发 Android 应用程序的经验，即使你对 Android Framework 掌握得不深，通过谷歌提供的 Android SDK，也能非常容易地开发出基于Android的交互应用程序。这得益于 Android 为开发者提供了一套定义良好的软件框架，开发者即使不具备特别高深的专业知识，在短时间内同样能开发出强大的 Android 应用程序。​<br><a id="more"></a><br><img src="https://raw.githubusercontent.com/niaorentribe/blogimg/master/android/framework/1/1-1.png" alt="Android系统框架图"></p>
-<p>如上图所示是 Android 系统框架图，由下往上分为5层，依次为Linux内核层、硬件抽象层、系统运行库层、Java API 框架层和应用程序层。</p>
-<p>观察 Android 系统框架图可以发现，其提供的系统应用程序（Dialer、Email、Calendar、Camera等）都运行在 Java API 框架层之上。同样，开发者借助 Android SDK 开发出的应用程序也运行在Java API 框架层之上。</p>
-<p>如果你想成为一名优秀的 Android 平台应用程序开发者，那么你很有必要深入了解学习 Android 框架。Android 是一个真正开放的移动开发平台，访问其网站<a href="http://source.android.com" target="_blank" rel="external">http://source.android.com</a>即可轻松获取源代码。每个硬件厂商可以根据自身需要定制基本的 Android 框架，开发出与竞争对手不同的产品。这样，若想构建基于 Android 框架的个性化移动终端系统，则必须对 Android 框架进行系统、全面地学习与研究。</p>
-<p>Android 主要源代码组成如下：</p>
-<ul>
-<li>abi                    abi（application binary interface，应用程序二进制接口）相关代码，描述了应用程序和操作系统之间，应用程序和它的库之间，以及应用程序各组成部分之间的接口</li>
-<li>art                    Android Runtime，Android 4.4 之后支持</li>
-<li>bionic                 Android 标准C运行支持库</li>
-<li>bootable               Android 启动引导相关代码</li>
-<li>build                  存放 Android 系统编译规则及generic等基础开发包配置</li>
-<li>cts                    Android 兼容性测试源</li>
-<li>dalvik                 Dalvik 虚拟机</li>
-<li>development            应用程序开发相关</li>
-<li>device                 Android 对要编译产品的配置目录</li>
-<li>docs                   介绍开源的相关文档</li>
-<li>external               Android 使用的开放源</li>
-<li>frameworks             Android核心框架</li>
-<li>hardware               Android HAL（Hardware Abstraction Layer，硬件抽象层）库源</li>
-<li>libcore                Android 的核心库</li>
-<li>libnativehelper        Android 类库的支持函数</li>
-<li>ndk                    Android NDK（Android Native Development Kit）是一系列的开发工具，允许程序开发人员在Android应用程序中嵌入C/C++语言编写的非托管代码</li>
-<li>packages               包含 Android 基本应用，Content Provider 等</li>
-<li>pdk                    Android pdk（Platform Development Kit，平台开发套件），仅包含开发 Android HAL 的必要组件，用于帮助芯片提供商和 OEM 厂商顺利迁移到新的 Android 版本</li>
-<li>prebuilts              x86 和 arm 架构下预编译的一些资源</li>
-<li>sdk                    sdk 及模拟器</li>
-<li>system                 Android 初始化进程、蓝牙工具集等</li>
-<li>toolchain              Android 的交叉编译工具</li>
-<li>tools                  Android 工具包</li>
-</ul>
-
+        
       
     </div>
     <footer>
       
         
-  
-  <div class="categories">
-    <a href="/categories/tech/">技术</a>
-  </div>
-
         
-  
-  <div class="tags">
-    <a href="/tags/android/">android</a>
-  </div>
-
         
   <div class="addthis addthis_toolbox addthis_default_style">
     
@@ -151,7 +108,7 @@
   }(document, 'script', 'facebook-jssdk'));
 </script>
 
-<div class="fb-comments" data-href="http://niaorentribe.github.io/2016/12/21/鸟人的Android揭秘-1-——源代码构成/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+<div class="fb-comments" data-href="http://niaorentribe.github.io/about/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
       
   
 </section>

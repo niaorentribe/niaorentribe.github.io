@@ -1,0 +1,236 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>鸟人的Android揭秘(8)——搭建Android SDK开发环境（四） | 鸟人私房菜</title>
+  <meta name="author" content="鸟人部落">
+  
+  <meta name="description" content="心灵净土 思考感悟">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="鸟人的Android揭秘(8)——搭建Android SDK开发环境（四）"/>
+  <meta property="og:site_name" content="鸟人私房菜"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="鸟人私房菜" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">鸟人私房菜</a></h1>
+  <h2><a href="/"></a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">往期文章</a></li>
+    
+      <li><a href="/about">关于鸟人</a></li>
+    
+    <li><a href="/atom.xml">RSS</a></li>
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2016-12-24T07:47:22.000Z"><a href="/2016/12/24/鸟人的Android揭秘-8-——搭建Android-SDK开发环境（四）/">2016-12-24</a></time>
+      
+      
+  
+    <h1 class="title">鸟人的Android揭秘(8)——搭建Android SDK开发环境（四）</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>到目前为止，我们已经完整讲解完Android源代码的编译，以及基于Android Studio的开发环境搭建和调试，读者按照前文所述即可开始自己的Android探索之旅。</p>
+<p>虽然Android Studio用来开发和调试Java代码非常方便，但对C/C++代码支持并不是很友好，C/C++开发利器Source Insight[1]也没有相应的Linux或Mac版本。为了方便查看Android源代码底层C/C++实现，我们再来讲解安装Sublime Text和CTags插件作为辅助工具。<br><a id="more"></a><br>Sublime Text是一个收费的代码编辑器（但可以无限期试用），由程序员Jon Skinner于2008年1月份所开发出来，它最初被设计为一个具有丰富扩展功能的Vim，同时支持Windows、Linux、Mac OS X等操作系统。目前最新版本是Sublime Text 3，通过以下网址可下载使用：<a href="http://www.sublimetext.com/3" target="_blank" rel="external">http://www.sublimetext.com/3</a></p>
+<p>Sublime Text的安装过程相对简单，下载后按照安装引导流程完成即可。通过菜单“Preferences”-&gt;“Settings”打开设置界面，左侧窗口显示的是软件的默认配置，右侧窗口显示的是用户设置，如下图所示，可以将左侧的某项配置拷贝到右侧窗口进行修改，修改完毕后保存再重启Sublime Text便可生效。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-20.png?raw=true" alt="设置Sublime Text"></p>
+<p>继续安装CTags插件，在Sublime Text主界面，依次点击菜单“Preferences”-&gt;“Package Control”，在打开的窗口中输入“Install Package”，如下图所示。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-21.png?raw=true" alt="打开Package Control窗口，输入Install Package命令"></p>
+<p>等Sublime Text扫描完毕可安装的插件，在弹出的插件列表窗口中，输入“CTags”开始安装，如下图所示。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-22.png?raw=true" alt="在插件列表窗口输入“CTagas”开始安装"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    <span class="string">"command"</span>: <span class="string">"/usr/local/bin/ctags"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>至此，Sublime Text的CTags插件已经安装配置完成，但仍无法使用，需要继续安装CTags的可执行文件。通过以下网址下载CTags的源代码：</p>
+<p><a href="http://jaist.dl.sourceforge.net/project/ctags/ctags/5.8/ctags-5.8.tar.gz" target="_blank" rel="external">http://jaist.dl.sourceforge.net/project/ctags/ctags/5.8/ctags-5.8.tar.gz</a></p>
+<p>接着解压缩源代码包ctags-5.8.tar.gz<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ tar xzvf ctags-5.8.tar.gz</div></pre></td></tr></table></figure></p>
+<p>编译安装<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ <span class="built_in">cd</span> ctags-5.8</div><div class="line">$ ./configure</div><div class="line">$ make</div><div class="line">$ sudo make install</div></pre></td></tr></table></figure></p>
+<p>再次回到Sublime Text，打开菜单“Project”-&gt;“Add Folder to Project…”，将Android源代码目录都加入到工程中，如下图所示，如果在Sublime Text中看不到加入的文件夹，可通过菜单“View”-&gt;“Side Bar”-&gt;“Show Side Bar”可打开左侧边栏的文件夹视图。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-23.png?raw=true" alt="将Android源代码目录加入到Sublime Text"></p>
+<p>在左侧视图中，选择顶级的所有文件夹，右键菜单，点击“CTags: Rebuild Tags”选项创建CTags索引，如下图所示。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-24.png?raw=true" alt="选择所有顶级文件夹，右键菜单，选择“CTags: Rebuild Tags”"></p>
+<p>CTags索引创建完成后，就可以在Sublime Text中浏览代码，点击菜单“Goto”-&gt;“Goto Anything…”，或同时按下快捷键Ctrl+P，打开搜索窗口，输入想查看的文件名称，即可快速定位打开该文件，如下图所示打开init.cpp文件。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-25.png?raw=true" alt="在搜索窗口中输入文件名称定位"></p>
+<p>点击菜单“Goto”-&gt;“Goto Symbol…”，或同时按下快捷键Ctrl+R，可打开窗口在当前文件里搜索方法实现，如下图所示。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/2/2-26.png?raw=true" alt="在当前文件搜索方法实现"></p>
+<p>至此，Sublime Text和CTags已经都安装完毕，后续在分析Android源代码的时候会有很多地方会使用到这些工具，读者可在实践中进一步摸索。</p>
+<p>[1] Source Insight是一个面向项目开发的程序编辑器和代码浏览器，支持对C/C++、C#和Java等程序的分析，具体可参考<a href="http://www.sourceinsight.com/" target="_blank" rel="external">http://www.sourceinsight.com/</a>。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/tech/">技术</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/android/">android</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://niaorentribe.github.io/2016/12/24/鸟人的Android揭秘-8-——搭建Android-SDK开发环境（四）/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/tech/">技术</a><small>8</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/android/">android</a><small>8</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2016/12/24/鸟人的Android揭秘-8-——搭建Android-SDK开发环境（四）/">鸟人的Android揭秘(8)——搭建Android SDK开发环境（四）</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/24/鸟人的Android揭秘-7-——搭建Android-SDK开发环境（三）/">鸟人的Android揭秘(7)——搭建Android SDK开发环境（三）</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/23/鸟人的Android揭秘-6-——搭建Android-SDK开发环境（二）/">鸟人的Android揭秘(6)——搭建Android SDK开发环境（二）</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/23/鸟人的Android揭秘-5-——搭建Android-SDK开发环境（一）/">鸟人的Android揭秘(5)——搭建Android SDK开发环境（一）</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/22/鸟人的Android揭秘-4-——Android-源代码编译/">鸟人的Android揭秘(4)——Android 源代码编译</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:niaorentribe.github.io">
+  </form>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2016 鸟人部落
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
