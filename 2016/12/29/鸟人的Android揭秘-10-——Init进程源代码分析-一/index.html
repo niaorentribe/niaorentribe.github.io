@@ -1,0 +1,224 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>鸟人的Android揭秘(10)——init进程源代码分析(一) | 鸟人私房菜</title>
+  <meta name="author" content="鸟人部落">
+  
+  <meta name="description" content="心灵净土 思考感悟">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="鸟人的Android揭秘(10)——init进程源代码分析(一)"/>
+  <meta property="og:site_name" content="鸟人私房菜"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="鸟人私房菜" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">鸟人私房菜</a></h1>
+  <h2><a href="/"></a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">往期文章</a></li>
+    
+      <li><a href="/about">关于鸟人</a></li>
+    
+    <li><a href="/atom.xml">RSS</a></li>
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2016-12-29T15:42:11.000Z"><a href="/2016/12/29/鸟人的Android揭秘-10-——Init进程源代码分析-一/">2016-12-29</a></time>
+      
+      
+  
+    <h1 class="title">鸟人的Android揭秘(10)——init进程源代码分析(一)</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>本节开始依次分析init进程源代码中main()函数内的代码。受限于篇幅，我们无法将所有源代码一一列出讲解，这里分析主要流程和思路，希望读者能够参考init进程的实际代码，一起研究学习。</p>
+<p>init进程分析init.rc启动脚本文件，并根据相关文件中包含的内容，执行相应的功能。另外，init进程提供属性服务，保存系统运行所需的环境变量。此外，其还负责监视子进程的运行，处理子进程的终止和重启。当应用程序访问设备驱动时，还会生成设备节点文件。接下来我们参考main()函数逐一分析代码。<br><a id="more"></a><br>init进程的运行分成两阶段，第一阶段只完成最主要的初始化工作，如目录生成和挂载、日志初始化和设置、SELinux初始化等，之后第二阶段则才完成余下的初始化过程，如属性的初始化、属性服务启动、init.rc文件分析和相关服务的启动等。如下代码所示，当第一阶段过成后，init进程调用execv[1]函数并带上“–second-stag”标志切换到第二阶段。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">bool is_first_stage = (argc == 1) || (strcmp(argv[1], <span class="string">"--second-stage"</span>) != 0);</div><div class="line">...</div><div class="line"><span class="keyword">if</span> (is_first_stage) &#123;</div><div class="line">    ...</div><div class="line">    char* path = argv[0];</div><div class="line">    char* args[] = &#123; path, const_cast&lt;char*&gt;(<span class="string">"--second-stage"</span>), nullptr &#125;;</div><div class="line">    <span class="keyword">if</span> (execv(path, args) == -1) &#123;</div><div class="line">        ERROR(<span class="string">"execv(\"%s\") failed: %s\n"</span>, path, strerror(errno));</div><div class="line">        security_failure();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>编译Android系统源代码时，在生成的根文件系统中，并不存在/dev、/proc、/sys这类目录，它们是系统运行时的目录，由init进程启动后，在运行过程中创建和挂载的，如下代码所示。当系统终止时，这类目录就会消失。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">mount(<span class="string">"tmpfs"</span>, <span class="string">"/dev"</span>, <span class="string">"tmpfs"</span>, MS_NOSUID, <span class="string">"mode=0755"</span>);[2]</div><div class="line">mkdir(<span class="string">"/dev/pts"</span>, 0755);</div><div class="line">mkdir(<span class="string">"/dev/socket"</span>, 0755);</div><div class="line">mount(<span class="string">"devpts"</span>, <span class="string">"/dev/pts"</span>, <span class="string">"devpts"</span>, 0, NULL);[3]</div><div class="line"><span class="comment">#define MAKE_STR(x) __STRING(x)</span></div><div class="line">mount(<span class="string">"proc"</span>, <span class="string">"/proc"</span>, <span class="string">"proc"</span>, 0,</div><div class="line"> <span class="string">"hidepid=2,gid="</span> MAKE_STR(AID_READPROC));[4]</div><div class="line">mount(<span class="string">"sysfs"</span>, <span class="string">"/sys"</span>, <span class="string">"sysfs"</span>, 0, NULL);[5]</div></pre></td></tr></table></figure></p>
+<p>init进程创建系统运行所需的目录，形成下图所示的层次目录结构。在图中，[]内表示挂载在相应目录下的文件系统。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/3/3-4.png?raw=true" alt="init进程创建的目录层次结构"></p>
+<p>下列代码用于生成log设备并设置日志输出级别，以便输出init进程的运行信息。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">open_devnull_stdio();[6]</div><div class="line">klog_init();</div><div class="line">klog_set_level(KLOG_NOTICE_LEVEL);</div></pre></td></tr></table></figure></p>
+<p>init进程通过执行前面的代码生成/dev目录，包含系统中使用的设备，而后调用open_devnull_stdio()函数，创建运行日志输出设备。open_devnull_stdio()函数会优先使用/sys/fs/selinux/null设备节点文件，如果该节点不可用，则在/dev目录下生成<strong>null</strong>设备节点文件，最后再将标准输入、标准输出和标准错误输出全部重定向到<strong>null</strong>设备中，如下图所示。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/3/3-5.png?raw=true" alt="main()-改变log信息输出设备"></p>
+<p>由上图可见，open_devnull_stdio()函数将标准输入输出全都重定向到<strong>null</strong>设备中，为了查看进程输出的日志，init进程调用klog_init()[7]函数提供输出日志信息的设备，如下面的代码所示。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">void klog_init(void) &#123;</div><div class="line">    <span class="keyword">if</span> (klog_fd &gt;= 0) <span class="built_in">return</span>; /* Already initialized */</div><div class="line">    klog_fd = open(<span class="string">"/dev/kmsg"</span>, O_WRONLY | O_CLOEXEC);</div><div class="line">    <span class="keyword">if</span> (klog_fd &gt;= 0) &#123;</div><div class="line">        <span class="built_in">return</span>;</div><div class="line">    &#125;</div><div class="line">    static const char* name = <span class="string">"/dev/__kmsg__"</span>;</div><div class="line">    <span class="keyword">if</span> (mknod(name, S_IFCHR | 0600, (1 &lt;&lt; 8) | 11) == 0) &#123;</div><div class="line">        klog_fd = open(name, O_WRONLY | O_CLOEXEC);</div><div class="line">        unlink(name);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>init进程通过调用klog_init()函数生成“/dev/<strong>kmsg</strong>”设备节点文件，该设备调用内核信息输出函数printk()。init进程即是通过该函数来输出日志信息,下面的代码所示是可用于输出信息的宏定义。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#define ERROR(x...)   init_klog_write(KLOG_ERROR_LEVEL, x)</span></div><div class="line"><span class="comment">#define WARNING(x...) init_klog_write(KLOG_WARNING_LEVEL, x)</span></div><div class="line"><span class="comment">#define NOTICE(x...)  init_klog_write(KLOG_NOTICE_LEVEL, x)</span></div><div class="line"><span class="comment">#define INFO(x...)    init_klog_write(KLOG_INFO_LEVEL, x)</span></div><div class="line"><span class="comment">#define DEBUG(x...)   init_klog_write(KLOG_DEBUG_LEVEL, x)</span></div><div class="line"><span class="comment">#define VERBOSE(x...) init_klog_write(KLOG_DEBUG_LEVEL, x)</span></div></pre></td></tr></table></figure></p>
+<p>这一小节我们先讲解完init进程对目录生成和挂载、日志初始化和设置，接下来的一小节我们将继续讲解SELinux的初始化过程和init.rc文件的解析。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/tech/">技术</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/android/">android</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://niaorentribe.github.io/2016/12/29/鸟人的Android揭秘-10-——Init进程源代码分析-一/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/tech/">技术</a><small>10</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/android/">android</a><small>10</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2016/12/29/鸟人的Android揭秘-10-——Init进程源代码分析-一/">鸟人的Android揭秘(10)——init进程源代码分析(一)</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/26/鸟人的Android揭秘-9-——Init进程运行过程/">鸟人的Android揭秘(9)——Init进程运行过程</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/24/鸟人的Android揭秘-8-——搭建Android-SDK开发环境（四）/">鸟人的Android揭秘(8)——搭建Android SDK开发环境（四）</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/24/鸟人的Android揭秘-7-——搭建Android-SDK开发环境（三）/">鸟人的Android揭秘(7)——搭建Android SDK开发环境（三）</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/23/鸟人的Android揭秘-6-——搭建Android-SDK开发环境（二）/">鸟人的Android揭秘(6)——搭建Android SDK开发环境（二）</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:niaorentribe.github.io">
+  </form>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2016 鸟人部落
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
