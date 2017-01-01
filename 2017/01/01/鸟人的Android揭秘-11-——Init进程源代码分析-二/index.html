@@ -1,0 +1,225 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>鸟人的Android揭秘(11)——Init进程源代码分析(二) | 鸟人私房菜</title>
+  <meta name="author" content="鸟人部落">
+  
+  <meta name="description" content="心灵净土 思考感悟">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="鸟人的Android揭秘(11)——Init进程源代码分析(二)"/>
+  <meta property="og:site_name" content="鸟人私房菜"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="鸟人私房菜" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">鸟人私房菜</a></h1>
+  <h2><a href="/"></a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">往期文章</a></li>
+    
+      <li><a href="/about">关于鸟人</a></li>
+    
+    <li><a href="/atom.xml">RSS</a></li>
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-01-01T15:35:21.000Z"><a href="/2017/01/01/鸟人的Android揭秘-11-——Init进程源代码分析-二/">2017-01-01</a></time>
+      
+      
+  
+    <h1 class="title">鸟人的Android揭秘(11)——Init进程源代码分析(二)</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>前面一节我们已经讲解了init进程对目录生成和挂载、日志初始化和设置，接下来init进程将初始化SELinux并设置policy文件，如下面代码所示。若要详细了解SELinux的设计原理和工作机制，需要用一整本书来讲解，由于篇幅所限，在此我们不过多涉及这方面的内容。init进程运行在用户空间，主要涉及对SELinux的挂载和配置，下面我们把重点放在这个过程上。<br><a id="more"></a><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">static void selinux_initialize(bool in_kernel_domain) &#123;</div><div class="line">    selinux_callback cb;            </div><div class="line">    cb.func_log = selinux_klog_callback;</div><div class="line">    selinux_set_callback(SELINUX_CB_LOG, cb);                         &lt;---（1）</div><div class="line">    cb.func_audit = audit_callback;</div><div class="line">    selinux_set_callback(SELINUX_CB_AUDIT, cb);</div><div class="line">    <span class="keyword">if</span> (in_kernel_domain) &#123;</div><div class="line">        INFO(<span class="string">"Loading SELinux policy...\n"</span>);</div><div class="line">        <span class="keyword">if</span> (selinux_android_load_policy() &lt; 0) &#123;                      &lt;--- (2)</div><div class="line">            ERROR(<span class="string">"failed to load policy: %s\n"</span>, strerror(errno));</div><div class="line">            security_failure();</div><div class="line">        &#125;</div><div class="line">        bool kernel_enforcing = (security_getenforce() == 1);</div><div class="line">        bool is_enforcing = selinux_is_enforcing();</div><div class="line">        <span class="keyword">if</span> (kernel_enforcing != is_enforcing) &#123;                       &lt;--- (3)</div><div class="line">            <span class="keyword">if</span> (security_setenforce(is_enforcing)) &#123;</div><div class="line">                ERROR(<span class="string">"security_setenforce(%s) failed: %s\n"</span>,</div><div class="line">                      is_enforcing ? <span class="string">"true"</span> : <span class="string">"false"</span>, strerror(errno));</div><div class="line">                security_failure();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (write_file(<span class="string">"/sys/fs/selinux/checkreqprot"</span>, <span class="string">"0"</span>) == -1) &#123;  &lt;--- (4)</div><div class="line">            security_failure();</div><div class="line">        &#125;</div><div class="line">    ...</div><div class="line">&#125;</div><div class="line">int main(int argc, char** argv) &#123;</div><div class="line">    ...</div><div class="line">    selinux_initialize(is_first_stage);</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>(1) selinux_initialize()函数调用selinux_set_callback()函数设置两个全局的回调函数指针“selinux_log”和“selinux_audit”。</p>
+<p>(2) 调用selinux_android_load_policy()[2]函数加载并向内核设置策略，selinux_initialize()函数的主要作用就是从文件中读取SELinux的配置文件，然后把它设置到内核中，这样SELinux才能开始工作。</p>
+<p>(3) 检查是否启用SELinux，有两种方法可以配置是否启用SELinux，一是SELinux挂载目录下的enforce文件，其中只有一个数字值表示SELinux的当前状态，0表示不启用（permissive），1则表示启用（enforcing）；其次是/proc/cmdline文件，在其中加入“androidboot.selinux= permissive”字段表示不启用（permissive），否则启用（enforcing），这种方法主要用于开发或调试版本。</p>
+<p>(4) 在“/sys/fs/selinux/checkreqprot”文件中写入校验结果，如果写入成功，则SELinux设置完毕，可正常使用。</p>
+<p>上述代码的(2)所示selinux_android_load_policy()函数是加载SELinux的主要逻辑代码，如下面的代码所示，selinux_android_load_policy()函数尝试将SELinux的虚拟文件系统selinuxfs挂载到“/sys/fs/selinux”节点上，形成下面的图所示的层次结构。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rc = mount(SELINUXFS, mnt, SELINUXFS, 0, NULL);</div></pre></td></tr></table></figure></p>
+<p>如果内核没有启用SELinux，则“/sys/fs/selinux”挂载失败，selinux_android_load_policy()函数继续尝试在根目录下创建“/selinux”节点并挂载，如果再次失败则SELinux初始化失败。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/3/3-6.png?raw=true" alt="SELinux挂载"></p>
+<p>在SELinux挂载成功后，调用selinux_android_load_policy_helper()函数装载policy文件。selinux_android_load_policy_helper()函数首先调用set_policy_index()函数设置policy文件的索引，目的是为了打开在sepolicy_file数组中定义的policy文件，然后调用mmap()函数把它映射到内存中，最后调用函数security_load_policy()把policy设置到内核中。policy文件的文件名保存在数组sepolicy_file中，定义如下面的代码所示。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">static const char *const sepolicy_file[] = &#123;</div><div class="line">    <span class="string">"/sepolicy"</span>,</div><div class="line">    <span class="string">"/data/security/current/sepolicy"</span>,</div><div class="line">    NULL &#125;;</div></pre></td></tr></table></figure></p>
+<p>至此，SELinux的初始化就讲解完了。如前一篇<a href="https://niaorentribe.github.io/2016/12/29/鸟人的Android揭秘-10-——Init进程源代码分析-一/">鸟人的Android揭秘(10)——Init进程源代码分析(一)</a>所说，init进程将切换到第二阶段的初始化过程。下一节我们将讲解init进程对属性的初始化和属性服务的启动。</p>
+<p>[1] SELinux（Security-Enhanced Linux）是由美国国家安全局（NSA）实现的一种基于“域-类型”模型（domain-type）的强制访问控制（MAC）安全系统，在这种访问控制体系的限制下，进程只能访问它的任务中所需要文件。Linux内核在2.6版本中引入了SELinux，并提供一个可定制的安全策略，同时也提供了很多用户层的库和工具。SELinux是目前为止功能最全面、测试最充分的Linux安全模块，相应的某些安全相关的应用也被打了SELinux的补丁。</p>
+<p>[2] 该函数定义在external/libselinux/src/android.c中。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/tech/">技术</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/android/">android</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://niaorentribe.github.io/2017/01/01/鸟人的Android揭秘-11-——Init进程源代码分析-二/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/tech/">技术</a><small>11</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/android/">android</a><small>11</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2017/01/01/鸟人的Android揭秘-11-——Init进程源代码分析-二/">鸟人的Android揭秘(11)——Init进程源代码分析(二)</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/29/鸟人的Android揭秘-10-——Init进程源代码分析-一/">鸟人的Android揭秘(10)——init进程源代码分析(一)</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/26/鸟人的Android揭秘-9-——Init进程运行过程/">鸟人的Android揭秘(9)——Init进程运行过程</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/24/鸟人的Android揭秘-8-——搭建Android-SDK开发环境（四）/">鸟人的Android揭秘(8)——搭建Android SDK开发环境（四）</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/24/鸟人的Android揭秘-7-——搭建Android-SDK开发环境（三）/">鸟人的Android揭秘(7)——搭建Android SDK开发环境（三）</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:niaorentribe.github.io">
+  </form>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 鸟人部落
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
