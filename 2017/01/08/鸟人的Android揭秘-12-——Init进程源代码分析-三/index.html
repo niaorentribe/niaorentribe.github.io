@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>鸟人的Android揭秘(1)——源代码构成 | 鸟人私房菜</title>
+  <title>鸟人的Android揭秘(12)——Init进程源代码分析(三) | 鸟人私房菜</title>
   <meta name="author" content="鸟人部落">
   
   <meta name="description" content="心灵净土 思考感悟">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <meta property="og:title" content="鸟人的Android揭秘(1)——源代码构成"/>
+  <meta property="og:title" content="鸟人的Android揭秘(12)——Init进程源代码分析(三)"/>
   <meta property="og:site_name" content="鸟人私房菜"/>
 
   
@@ -63,46 +63,30 @@
     <header>
       
         <div class="icon"></div>
-        <time datetime="2016-12-21T09:01:46.000Z"><a href="/2016/12/21/鸟人的Android揭秘-1-——源代码构成/">2016-12-21</a></time>
+        <time datetime="2017-01-08T14:17:16.000Z"><a href="/2017/01/08/鸟人的Android揭秘-12-——Init进程源代码分析-三/">2017-01-08</a></time>
       
       
   
-    <h1 class="title">鸟人的Android揭秘(1)——源代码构成</h1>
+    <h1 class="title">鸟人的Android揭秘(12)——Init进程源代码分析(三)</h1>
   
 
     </header>
     <div class="entry">
       
-        <p>如果你有过开发 Android 应用程序的经验，即使你对 Android Framework 掌握得不深，通过谷歌提供的 Android SDK，也能非常容易地开发出基于Android的交互应用程序。这得益于 Android 为开发者提供了一套定义良好的软件框架，开发者即使不具备特别高深的专业知识，在短时间内同样能开发出强大的 Android 应用程序。​<br><a id="more"></a><br><img src="https://raw.githubusercontent.com/niaorentribe/blogimg/master/android/framework/1/1-1.png" alt="Android系统框架图"></p>
-<p>如上图所示是 Android 系统框架图，由下往上分为5层，依次为Linux内核层、硬件抽象层、系统运行库层、Java API 框架层和应用程序层。</p>
-<p>观察 Android 系统框架图可以发现，其提供的系统应用程序（Dialer、Email、Calendar、Camera等）都运行在 Java API 框架层之上。同样，开发者借助 Android SDK 开发出的应用程序也运行在Java API 框架层之上。</p>
-<p>如果你想成为一名优秀的 Android 平台应用程序开发者，那么你很有必要深入了解学习 Android 框架。Android 是一个真正开放的移动开发平台，访问其网站<a href="http://source.android.com" target="_blank" rel="external">http://source.android.com</a>即可轻松获取源代码。每个硬件厂商可以根据自身需要定制基本的 Android 框架，开发出与竞争对手不同的产品。这样，若想构建基于 Android 框架的个性化移动终端系统，则必须对 Android 框架进行系统、全面地学习与研究。</p>
-<p>Android 主要源代码组成如下：</p>
-<ul>
-<li>abi                    abi（application binary interface，应用程序二进制接口）相关代码，描述了应用程序和操作系统之间，应用程序和它的库之间，以及应用程序各组成部分之间的接口</li>
-<li>art                    Android Runtime，Android 4.4 之后支持</li>
-<li>bionic                 Android 标准C运行支持库</li>
-<li>bootable               Android 启动引导相关代码</li>
-<li>build                  存放 Android 系统编译规则及generic等基础开发包配置</li>
-<li>cts                    Android 兼容性测试源</li>
-<li>dalvik                 Dalvik 虚拟机</li>
-<li>development            应用程序开发相关</li>
-<li>device                 Android 对要编译产品的配置目录</li>
-<li>docs                   介绍开源的相关文档</li>
-<li>external               Android 使用的开放源</li>
-<li>frameworks             Android核心框架</li>
-<li>hardware               Android HAL（Hardware Abstraction Layer，硬件抽象层）库源</li>
-<li>libcore                Android 的核心库</li>
-<li>libnativehelper        Android 类库的支持函数</li>
-<li>ndk                    Android NDK（Android Native Development Kit）是一系列的开发工具，允许程序开发人员在Android应用程序中嵌入C/C++语言编写的非托管代码</li>
-<li>packages               包含 Android 基本应用，Content Provider 等</li>
-<li>pdk                    Android pdk（Platform Development Kit，平台开发套件），仅包含开发 Android HAL 的必要组件，用于帮助芯片提供商和 OEM 厂商顺利迁移到新的 Android 版本</li>
-<li>prebuilts              x86 和 arm 架构下预编译的一些资源</li>
-<li>sdk                    sdk 及模拟器</li>
-<li>system                 Android 初始化进程、蓝牙工具集等</li>
-<li>toolchain              Android 的交叉编译工具</li>
-<li>tools                  Android 工具包</li>
-</ul>
+        <p>前文已经介绍完init进程第一阶段的初始化，接下来我们开始讲解init进程第二阶段初始化过程，首先是属性的设置。<br><a id="more"></a><br>如代码3-10所示，第二阶段一开始，即在“/dev”目录下创建“.booting”文件，以通知其它进程当前正处于启动过程。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">close(open(<span class="string">"/dev/.booting"</span>, O_WRONLY | O_CREAT | O_CLOEXEC, 0000));</div></pre></td></tr></table></figure></p>
+<p>代码 3-10 创建“/dev/.booting”</p>
+<p>在Android系统中，属性是一种特殊的资源，Android系统通过属性暴露设备和运行时信息，应用程序通过读写属性能够获得相应的信息，以及控制系统的行为，如代码3-11所示是属性的初始化。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">property_init();[1]</div></pre></td></tr></table></figure></p>
+<p>代码 3-11 main()-属性内存区域初始化</p>
+<p>在Android系统中，所有进程共享系统设置值，为此提供了一块属性内存区域。init进程调用代码3-12所示的property_init()函数，创建并初始化该内存区域。具体实现是property_init()函数通过调用__system_property_area_init()[2]函数完成。</p>
+<p>首先，<strong>system_property_area_init()函数在顶级目录下创建 “/dev/</strong>properties<strong>”子目录，用于保存属性的上下文文件。而后打开“/property_contexts”[3]文件，遍历其中的属性前缀及控制访问权限的上下文，将它们加载到内存中的链表。随后将链表中的每一个上下文在“/dev/</strong>properties<strong>”目录中都创建一个同名的文件，其中保存着受其控制的属性。最后把“/dev/</strong>properties__”中的上下文文件映射到共享内存中，实现对属性的权限控制。</p>
+<p>系统中其它进程通过执行中的进程所提供的API访问属性域中的设置值，但更改属性值仅能在init进程中进行。当修改属性值时，要预先向init进程提交值变更请求，然后init进程处理该请求，并修改属性值。</p>
+<p>代码3-12将属性初始化到内存中。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">process_kernel_dt();               （1）</div><div class="line">process_kernel_cmdline();          （2）</div><div class="line">export_kernel_boot_props();        （3）</div></pre></td></tr></table></figure></p>
+<p>代码 3-12 main()-属性初始化</p>
+<p>（1）初始化DT（Device Tree）的属性集，即访问“/proc/device-tree/firmware/android ”目录，先看compatible文件内容是否是“android，firmware”，然后这个目录下每个文件名作为属性，文件里面的内容作为属性值。</p>
+<p>（2）处理内核命令行，读取“/proc/cmdline”文件中的内容，然后调用import_kernel_nv()函数设置系统属性，此处只将“/proc/cmdline”中前缀为“androidboot.”的值设置到属性中。1中设置的DT属性集优先级高于此处设置的属性。</p>
+<p>（3）设置内核启动的变量，根据系统已有的属性设置，如有值则保持不变，否则设置成初始值。</p>
+<p>上述步骤基本就将Android系统所需的属性初始化好，正如上文所说，系统中属性的修改只能通过init进程来修改，为此init进程需要启动一个属性服务，下一篇我们将讲解这个服务的启动。</p>
+<p>[1] property_init()函数在system/core/init/property_service.cpp中定义。<br>[2] __system_property_area_init()函数在bionic/libc/bionic/system_properties.cpp中定义。<br>[3] property_contexts文件定义在system/sepolicy/property_contexts。</p>
 
       
     </div>
@@ -160,7 +144,7 @@
   }(document, 'script', 'facebook-jssdk'));
 </script>
 
-<div class="fb-comments" data-href="http://niaorentribe.github.io/2016/12/21/鸟人的Android揭秘-1-——源代码构成/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+<div class="fb-comments" data-href="http://niaorentribe.github.io/2017/01/08/鸟人的Android揭秘-12-——Init进程源代码分析-三/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
       
   
 </section>
