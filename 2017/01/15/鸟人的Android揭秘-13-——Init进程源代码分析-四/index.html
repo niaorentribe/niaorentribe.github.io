@@ -1,0 +1,235 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>鸟人的Android揭秘(13)——Init进程源代码分析(四) | 鸟人私房菜</title>
+  <meta name="author" content="鸟人部落">
+  
+  <meta name="description" content="心灵净土 思考感悟">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="鸟人的Android揭秘(13)——Init进程源代码分析(四)"/>
+  <meta property="og:site_name" content="鸟人私房菜"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="鸟人私房菜" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ce134723774b6efd9cd3c1d6e147fbc4";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">鸟人私房菜</a></h1>
+  <h2><a href="/"></a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">往期文章</a></li>
+    
+      <li><a href="/about">关于鸟人</a></li>
+    
+    <li><a href="/atom.xml">RSS</a></li>
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-01-15T02:23:29.000Z"><a href="/2017/01/15/鸟人的Android揭秘-13-——Init进程源代码分析-四/">2017-01-15</a></time>
+      
+      
+  
+    <h1 class="title">鸟人的Android揭秘(13)——Init进程源代码分析(四)</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>Android系统的文件节点都使用SELinux管理权限，前面介绍的init进程第一阶段初始化创建的文件节点，以及属性初始化过程创建的文件节点，是在加载sepolicy之前已经被创建了，在加载完sepolicy之后，需要重新设置相关的属性。代码3-13所示是根据file_contexts[1]文件的内容设置相应文件节点的上下文。<br><a id="more"></a><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">restorecon(<span class="string">"/dev"</span>);</div><div class="line">restorecon(<span class="string">"/dev/socket"</span>);</div><div class="line">restorecon(<span class="string">"/dev/__properties__"</span>);</div><div class="line">restorecon(<span class="string">"/property_contexts"</span>);</div><div class="line">restorecon_recursive(<span class="string">"/sys"</span>);</div></pre></td></tr></table></figure></p>
+<p>代码 3-13 main()-设置SELinux访问权限</p>
+<p>接下来创建套接字，以便init进程在收到子进程终止的SIGCHLD信号时调用相应的handler。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">epoll_fd = epoll_create1(EPOLL_CLOEXEC);</div><div class="line"><span class="keyword">if</span> (epoll_fd == <span class="number">-1</span>) &#123;</div><div class="line">    ERROR(<span class="string">"epoll_create1 failed: %s\n"</span>, strerror(errno));</div><div class="line">    <span class="built_in">exit</span>(<span class="number">1</span>);</div><div class="line">&#125;</div><div class="line">signal_handler_init();</div></pre></td></tr></table></figure></p>
+<p>代码 3-14 main()-创建epoll和套接字</p>
+<p>代码3-14中，首先调用epoll_create1()函数创建epoll的句柄，通知内核开始监听文件描述符（file description，fd）。epoll_create1()函数创建成功时也会占用一个文件描述符，EPOLL_CLOEXE参数的作用是通知内核在使用完该文件描述符后需要关闭，以免文件描述符资源耗尽，紧接着调用signal_handler_init()函数创建套接字，安装信号处理器，并将套接字描述符注册到epoll中，如代码3-15所示。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">signal_handler_init</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="comment">// Create a signalling mechanism for SIGCHLD.</span></div><div class="line">    <span class="keyword">int</span> s[<span class="number">2</span>];</div><div class="line">    <span class="keyword">if</span> (socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, <span class="number">0</span>, s) == <span class="number">-1</span>) &#123;   （<span class="number">1</span>）</div><div class="line">        ERROR(<span class="string">"socketpair failed: %s\n"</span>, strerror(errno));</div><div class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</div><div class="line">    &#125;</div><div class="line">    signal_write_fd = s[<span class="number">0</span>];</div><div class="line">    signal_read_fd = s[<span class="number">1</span>];</div><div class="line">    <span class="comment">// Write to signal_write_fd if we catch SIGCHLD.</span></div><div class="line">    <span class="keyword">struct</span> sigaction act;</div><div class="line">    <span class="built_in">memset</span>(&amp;act, <span class="number">0</span>, <span class="keyword">sizeof</span>(act));</div><div class="line">    act.sa_handler = SIGCHLD_handler;   </div><div class="line">    act.sa_flags = SA_NOCLDSTOP;</div><div class="line">    sigaction(SIGCHLD, &amp;act, <span class="number">0</span>);                                                         （<span class="number">2</span>）</div><div class="line">    register_epoll_handler(signal_read_fd, handle_signal);                               （<span class="number">3</span>）</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>代码 3-15 创建套接字，监听SIGCHLD事件</p>
+<p>（1）调用socketpair()函数创建一对已经连接的非阻塞套接字，套接字描述符存储在二元数组s[2]中。这对套接字可以进行双工通信，每一个描述符既可以读也可以写。init进程使用s[0]作为输入端，s[1]作为输出端。</p>
+<p>（2）安装子进程信号处理器。Linux进程通过互相发送/接收消息来实现进程间的通信，这些消息被称为“信号”。每个进程在处理其它进程发送的信号时，都要注册信号处理器。当进程的运行状态改变或终止时，就会产生某种信号，init进程是所有进程的父进程，当其子进程终止产生SIGCHLD信号时，init进程需要调用信号安装函数sigaction()并通过参数传递sigaction结构体配置，完成信号处理器的安装。此处sigaction结构体的sa_flags设置为SA_NOCLDSTOP，表示仅当进程终止时才接收SIGCHLD信号。当发生SIGCHLD信号时，调用此处的handler，即SIGCHLD_handler，实质是对套拼字signal_write_fd（s[0]）执行写操作。</p>
+<p>（3）将signal_read_fd（s[1]）描述符和相应的handler注册到epoll中，当SIGCHLD信号产生时，signal_write_fd会被写入1，由于socketpair的绑定关系，这将触发信号对应的signal_read_fd收到数据，epoll监听到变化，调用此处注册的handler处理子进程的终止。</p>
+<p>上述init进程调用signal_handler_init()函数后的处理过程可以用图3-7总结，即一旦收到子进程终止触发的SIGCHLD信号后，将利用信号处理器SIGCHLD_handler向signal_write_fd写入信息，epoll句柄监听到signal_read_fd接收到信息，将调用handle_signal处理。关于子进程处理的更详细内容，我们将在后面“进程的终止和重启”章节中进得讲解。</p>
+<p><img src="https://github.com/niaorentribe/blogimg/blob/master/android/framework/3/3-7.jpg?raw=true" alt="图 3-7 main()-signal_handler_init()函数处理子进程终止的过程"></p>
+<p>前面我们已经讲解了init进程如何初始化属性，在Android系统中，对属性的修改只能在init进程中进行，其它进程对属性只有读的权限，必须通过向init进程发送修改请求，由init接收请求后进行处理，接下来将进一步讲解这方面的内容。</p>
+<p>[1] file_contexts的内容参考system/sepolicy/file_contexts。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/tech/">技术</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/android/">android</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://niaorentribe.github.io/2017/01/15/鸟人的Android揭秘-13-——Init进程源代码分析-四/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/tech/">技术</a><small>13</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/android/">android</a><small>13</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2017/01/15/鸟人的Android揭秘-13-——Init进程源代码分析-四/">鸟人的Android揭秘(13)——Init进程源代码分析(四)</a>
+      </li>
+    
+      <li>
+        <a href="/2017/01/08/鸟人的Android揭秘-12-——Init进程源代码分析-三/">鸟人的Android揭秘(12)——Init进程源代码分析(三)</a>
+      </li>
+    
+      <li>
+        <a href="/2017/01/01/鸟人的Android揭秘-11-——Init进程源代码分析-二/">鸟人的Android揭秘(11)——Init进程源代码分析(二)</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/29/鸟人的Android揭秘-10-——Init进程源代码分析-一/">鸟人的Android揭秘(10)——init进程源代码分析(一)</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/26/鸟人的Android揭秘-9-——Init进程运行过程/">鸟人的Android揭秘(9)——Init进程运行过程</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:niaorentribe.github.io">
+  </form>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 鸟人部落
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

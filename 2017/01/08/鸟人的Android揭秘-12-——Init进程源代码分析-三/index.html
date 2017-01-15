@@ -85,7 +85,7 @@
 <p>（1）初始化DT（Device Tree）的属性集，即访问“/proc/device-tree/firmware/android ”目录，先看compatible文件内容是否是“android，firmware”，然后这个目录下每个文件名作为属性，文件里面的内容作为属性值。</p>
 <p>（2）处理内核命令行，读取“/proc/cmdline”文件中的内容，然后调用import_kernel_nv()函数设置系统属性，此处只将“/proc/cmdline”中前缀为“androidboot.”的值设置到属性中。1中设置的DT属性集优先级高于此处设置的属性。</p>
 <p>（3）设置内核启动的变量，根据系统已有的属性设置，如有值则保持不变，否则设置成初始值。</p>
-<p>上述步骤基本就将Android系统所需的属性初始化好，正如上文所说，系统中属性的修改只能通过init进程来修改，为此init进程需要启动一个属性服务，下一篇我们将讲解这个服务的启动。</p>
+<p>上述步骤基本就将Android系统所需的属性初始化好。正如前面我们介绍的，init进程是其它所有进程的父进程，它需要监视和处理子进程的终止，为此需要初始化信号处理器，下一篇我们将介绍这方面的内容。</p>
 <p>[1] property_init()函数在system/core/init/property_service.cpp中定义。<br>[2] __system_property_area_init()函数在bionic/libc/bionic/system_properties.cpp中定义。<br>[3] property_contexts文件定义在system/sepolicy/property_contexts。</p>
 
       
@@ -156,7 +156,7 @@
   <h3 class="title">分类</h3>
   <ul class="entry">
   
-    <li><a href="/categories/tech/">技术</a><small>12</small></li>
+    <li><a href="/categories/tech/">技术</a><small>13</small></li>
   
   </ul>
 </div>
@@ -167,7 +167,7 @@
   <h3 class="title">标签</h3>
   <ul class="entry">
   
-    <li><a href="/tags/android/">android</a><small>12</small></li>
+    <li><a href="/tags/android/">android</a><small>13</small></li>
   
   </ul>
 </div>
@@ -177,6 +177,10 @@
 <div class="widget tag">
   <h3 class="title">最新文章</h3>
   <ul class="entry">
+    
+      <li>
+        <a href="/2017/01/15/鸟人的Android揭秘-13-——Init进程源代码分析-四/">鸟人的Android揭秘(13)——Init进程源代码分析(四)</a>
+      </li>
     
       <li>
         <a href="/2017/01/08/鸟人的Android揭秘-12-——Init进程源代码分析-三/">鸟人的Android揭秘(12)——Init进程源代码分析(三)</a>
@@ -192,10 +196,6 @@
     
       <li>
         <a href="/2016/12/26/鸟人的Android揭秘-9-——Init进程运行过程/">鸟人的Android揭秘(9)——Init进程运行过程</a>
-      </li>
-    
-      <li>
-        <a href="/2016/12/24/鸟人的Android揭秘-8-——搭建Android-SDK开发环境（四）/">鸟人的Android揭秘(8)——搭建Android SDK开发环境（四）</a>
       </li>
     
   </ul>
