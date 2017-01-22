@@ -1,0 +1,240 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>鸟人的Android揭秘(14)——Init进程源代码分析(五) | 鸟人私房菜</title>
+  <meta name="author" content="鸟人部落">
+  
+  <meta name="description" content="心灵净土 思考感悟">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="鸟人的Android揭秘(14)——Init进程源代码分析(五)"/>
+  <meta property="og:site_name" content="鸟人私房菜"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="鸟人私房菜" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ce134723774b6efd9cd3c1d6e147fbc4";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">鸟人私房菜</a></h1>
+  <h2><a href="/"></a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">往期文章</a></li>
+    
+      <li><a href="/about">关于鸟人</a></li>
+    
+    <li><a href="/atom.xml">RSS</a></li>
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-01-22T12:59:05.000Z"><a href="/2017/01/22/鸟人的Android揭秘-14-——Init进程源代码分析-五/">2017-01-22</a></time>
+      
+      
+  
+    <h1 class="title">鸟人的Android揭秘(14)——Init进程源代码分析(五)</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>前一篇主要讲解了init进程如何创建套接字以处理子进程终止，接下来我们继续分析init进程启动属性服务，以及分析init.rc的过程。<br><a id="more"></a><br>接下来init进程需要设置系统属性，如代码3-16所示。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">property_load_boot_defaults();</div><div class="line">export_oem_lock_status();</div></pre></td></tr></table></figure></p>
+<p>代码 3-16 main()-设置系统属性</p>
+<p>property_load_boot_defaults()函数实际上就是调用load_properties_from_file()[1]函数解析“/default.prop”配置文件，然后根据解析的结果设置系统属性。export_oem_lock_status()函数根据系统状态设置“ro.boot.flash.locked”属性。这部分代码较为简单，不深入分析。</p>
+<p>然后启动属性服务，它是init进程最主要的功能之一。init进程在共享内存区域中，创建并初始化属性域。其它进程可以访问属性域中的值，但更改属性值仅能在init进程中进行。其它进程修改属性值时，要预先向init进程提交属性值变更申请，然后init进程处理该申请并修改属性值。在访问和修改属性时，init进程都可以进行权限控制。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">start_property_service();</div></pre></td></tr></table></figure></p>
+<p>代码 3-17 main()-启动属性服务</p>
+<p>如前所述，属性值的更改仅能在init进程中进行，为此init进程生成“/dev/socket/property_service”套接字，以接收其它进程提交的申请。</p>
+<p>接下来init进程开始解析init.rc文件并执行相关的命令。init.rc文件大致分为两大部分，一部分是以“on”关键字开头的动作列表（Action List），另一部分是以“service”关键字开头的服务列表（Service List）。动作列表用于创建所需目录，以及为某些特定文件指定权限，而服务列表用来记录init进程需要启动的一些子进程。此外，还有一个关键字“import”，用于导入另外一个.rc文件，解析生成动作列表和服务列表，这些列表会分别被添加到init.rc文件已生成的服务列表和动作列表中。</p>
+<p>代码3-18所示创建了init.rc所需的解析器（Parser），用于解析“service”、“on”、“import”等关键字开始的列表。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> BuiltinFunctionMap function_map;</div><div class="line">Action::set_function_map(&amp;function_map);</div><div class="line">Parser&amp; parser = Parser::GetInstance();</div><div class="line">parser.AddSectionParser(<span class="string">"service"</span>,<span class="built_in">std</span>::make_unique&lt;ServiceParser&gt;());</div><div class="line">parser.AddSectionParser(<span class="string">"on"</span>, <span class="built_in">std</span>::make_unique&lt;ActionParser&gt;());</div><div class="line">parser.AddSectionParser(<span class="string">"import"</span>, <span class="built_in">std</span>::make_unique&lt;ImportParser&gt;());</div></pre></td></tr></table></figure></p>
+<p>代码 3-18 main()-创建init.rc解析器</p>
+<p>然后便开始解析init.rc文件。init.rc文件是在init进程启动后执行的启动脚本，文件中记录着init进程执行的功能。在Linux系统中，它被定义在根文件系统的“/etc/rc.d/”目录下，是启动时的可执行文件，在“/etc”目录下保存着设置环境变量的脚本。但在Android系统中，仅使用init.rc与init.{hardware}.rc两个文件，init.rc文件在Android系统运行过程中用于通用的环境设置及进程相关的定义，init.{hardware}.rc用于定义Android在不同平台下的特定进程和环境设置等。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">parser.ParseConfig(<span class="string">"/init.rc"</span>);</div></pre></td></tr></table></figure></p>
+<p>代码 3-19 main()-解析init.rc文件</p>
+<p>ParseConfig()方法传入参数是“/init.rc”，解析运行时与init进程同在根目录下的init.rc[2]文件。ParseConfig()方法实质上是调用ParseData()方法进行解析。执行该方法，读取并分析init.rc文件后，生成服务列表与动作列表。相对以前的代码，在Android 7.0的代码中，init.rc文件的解析已经做了较好的封装，动作列表解析后保存在ActionManager[3]类的actions<em>向量中，类似的，服务列表保存到ServiceManager[4]类的services</em>向量中。</p>
+<p>init进程会依次执行“early-init，init，late-init”片段中的命令，如代码3-20所示，init进程利用参数构造EventTrigger，然后加入到trigger<em>queue</em>中，后续init进程处理trigger事件时，将会触发相应的操作。init进程在后续代码依次构造了“early-init”、“init”、“late-init”的事件触发器，代码仅以构造“early-init”触发器为例。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">am.QueueEventTrigger(<span class="string">"early-init"</span>);</div></pre></td></tr></table></figure></p>
+<p>代码 3-20 main()-向执行队列中添加命令</p>
+<p>下面的代码构造新的action加入到actions_中，第一个参数作为新建action携带cmd的执行函数；第二个参数既作为action的trigger name，也作为action携带cmd的参数。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Queue an action that waits for coldboot done so we know ueventd has set up all of /dev...</span></div><div class="line">am.QueueBuiltinAction(wait_for_coldboot_done_action, <span class="string">"wait_for_coldboot_done"</span>);</div><div class="line"><span class="comment">// ... so that we can start queuing up actions that require stuff from /dev.</span></div><div class="line">am.QueueBuiltinAction(mix_hwrng_into_linux_rng_action, <span class="string">"mix_hwrng_into_linux_rng"</span>);</div><div class="line">am.QueueBuiltinAction(set_mmap_rnd_bits_action, <span class="string">"set_mmap_rnd_bits"</span>);</div><div class="line">am.QueueBuiltinAction(keychord_init_action, <span class="string">"keychord_init"</span>);</div><div class="line">am.QueueBuiltinAction(console_init_action, <span class="string">"console_init"</span>);</div></pre></td></tr></table></figure></p>
+<p>代码 3-21 main()-构造新的Action</p>
+<p>init进程在紧接着还会构造几个action，使用方法与上述代码非常类似，此处不再赘述。下一篇我们将讲解init进程如何处理上文构造出来的这些trigger、action和service。</p>
+<p>[1] load_properties_from_file()函数定义在system/core/init/property_service.cpp。<br>[2] init.rc文件在编译前，定义在system/core/rootdir/init.rc中。<br>[3] ActionManager定义在system/core/init/action.h中。<br>[4] ServiceManager定义在system/core/init/service.h中。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/tech/">技术</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/android/">android</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://niaorentribe.github.io/2017/01/22/鸟人的Android揭秘-14-——Init进程源代码分析-五/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/tech/">技术</a><small>14</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/android/">android</a><small>14</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2017/01/22/鸟人的Android揭秘-14-——Init进程源代码分析-五/">鸟人的Android揭秘(14)——Init进程源代码分析(五)</a>
+      </li>
+    
+      <li>
+        <a href="/2017/01/15/鸟人的Android揭秘-13-——Init进程源代码分析-四/">鸟人的Android揭秘(13)——Init进程源代码分析(四)</a>
+      </li>
+    
+      <li>
+        <a href="/2017/01/08/鸟人的Android揭秘-12-——Init进程源代码分析-三/">鸟人的Android揭秘(12)——Init进程源代码分析(三)</a>
+      </li>
+    
+      <li>
+        <a href="/2017/01/01/鸟人的Android揭秘-11-——Init进程源代码分析-二/">鸟人的Android揭秘(11)——Init进程源代码分析(二)</a>
+      </li>
+    
+      <li>
+        <a href="/2016/12/29/鸟人的Android揭秘-10-——Init进程源代码分析-一/">鸟人的Android揭秘(10)——init进程源代码分析(一)</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:niaorentribe.github.io">
+  </form>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 鸟人部落
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
